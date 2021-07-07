@@ -1,0 +1,2 @@
+#MapGenerator包：为了得到符合任务要求的地图，可以使用地图生成器进行地图生成，生成器统一放在这里
+from core.MapGenerator.CrossingWallTask import CWGenerator
