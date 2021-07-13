@@ -93,6 +93,7 @@ class DynaQPrior(BaseModelFreePolicy):
         return self.layout 
         
     def controlLayoutInit(self):
+        self.controller.spinBox_UIStep.setValue(10) # 设定UI更新周期（触发槽函数）
         self.initPolicy()  
         self.initModel()
         self.setLayoutVisiable(True)
@@ -132,8 +133,9 @@ class DynaQPrior(BaseModelFreePolicy):
     def learnFromTuple(self,S,A,R,S_,A_):
         S.Q[A] = S.Q[A] + self.alpha*(R + self.gamma*S_.Q[A_]-S.Q[A])
         
-        # 依价值变化调整S前导状态的优先级
+        # 依价值变化调整S前导状态的优先级（注意，按这里的实现方式，alpha=1时退化到Q-learning）
         P = abs(R + self.gamma*S_.Q[A_]-S.Q[A])
+        print()
         self.updatePriority(S,P)
 
         # 更新策略pi(Q-learning中仅用于UI显示)
@@ -143,6 +145,7 @@ class DynaQPrior(BaseModelFreePolicy):
             S.value += S.pi[a]*S.Q[a]
         
     def episode(self):
+        stepCnt = 0
         length = 0
         rewards = []
         
@@ -179,18 +182,20 @@ class DynaQPrior(BaseModelFreePolicy):
                     self.learnFromTuple(s,a,r,s_,a_)
                         
             # 在ui显示当前策略
-            if self.controller.timeStep != 0:
-                time.sleep(self.controller.timeStep)
-                self.map.gridWidget.update()
-
+            if self.controller.realTimeUI:
+                if self.controller.timeStep > 0:
+                    time.sleep(self.controller.timeStep)
+                if stepCnt % self.controller.UIStep == 0:
+                    self.map.gridWidget.update()
+                
             # 轨迹终止条件
             if S == self.map.endCube:
                 S.agentLocated = False
-                self.map.gridWidget.update()
                 break
             
             S.agentLocated,S_.agentLocated = False,True
             S = S_
+            stepCnt += 1
             
         # 手动终止，清除agent位置标记
         if not self.autoExec:

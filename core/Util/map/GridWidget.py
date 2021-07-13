@@ -204,6 +204,7 @@ class GridWidget(QtWidgets.QWidget):
                     if self.map.showPolicyOfSelectedCube and self.map.showEpisodeOfSelectedCube:
                         self.cubes[i][j].visited = False
 
+            # 显示状态动作价值
             if self.map.showQ:
                 cube = self.cubeSelected
                 if cube != None and cube.isPassable:

@@ -29,6 +29,9 @@ class Controller(QMainWindow):
         self.penList = []                   # 画笔列表
         self.timeStep = 0.01                # 计算周期
 
+        self.realTimeUI = True              # 实时更新UI
+        self.UIStep = 10                    # UI更新周期（以计算周期为单位）
+
         # 建立Ui 
         self.setupUi()
 
@@ -116,26 +119,48 @@ class Controller(QMainWindow):
         self.checkBox_valueColor.setEnabled(True)
         self.policyLayout.addWidget(self.checkBox_valueColor, 1, 1, 1, 1)
 
+        self.label_updateUI = QtWidgets.QLabel(self.centralwidget)
+        self.label_updateUI.setObjectName("label_updateUI")
+        self.label_updateUI.setMargin(1)
+        self.policyLayout.addWidget(self.label_updateUI, 2, 0, 1, 1)
+        self.checkBox_updateUI = QtWidgets.QCheckBox(self.centralwidget)
+        self.checkBox_updateUI.setText("")
+        self.checkBox_updateUI.setChecked(True)
+        self.checkBox_updateUI.setObjectName("checkBox_updateUI")
+        self.checkBox_updateUI.setEnabled(True)
+        self.policyLayout.addWidget(self.checkBox_updateUI, 2, 1, 1, 1)
+
         self.label_maxReward = QtWidgets.QLabel(self.centralwidget)
         self.label_maxReward.setObjectName("label_maxReward")
-        self.policyLayout.addWidget(self.label_maxReward, 2, 0, 1, 1)
+        self.policyLayout.addWidget(self.label_maxReward, 3, 0, 1, 1)
         self.spinBox_maxReward = QtWidgets.QDoubleSpinBox(self.centralwidget)
         self.spinBox_maxReward.setObjectName("spinBox_maxReward")
         self.spinBox_maxReward.setMinimum(0)
         self.spinBox_maxReward.setMaximum(1000)
         self.spinBox_maxReward.setValue(5.00)
-        self.policyLayout.addWidget(self.spinBox_maxReward, 2, 1, 1, 1)
+        self.policyLayout.addWidget(self.spinBox_maxReward, 3, 1, 1, 1)
 
         self.label_timeStep = QtWidgets.QLabel(self.centralwidget)
         self.label_timeStep.setObjectName("label_timeStep")
-        self.policyLayout.addWidget(self.label_timeStep, 3, 0, 1, 1)
+        self.label_timeStep.setMargin(1)
+        self.policyLayout.addWidget(self.label_timeStep, 4, 0, 1, 1)
         self.spinBox_timeStep = QtWidgets.QDoubleSpinBox(self.centralwidget)
-        self.spinBox_timeStep.setMinimum(0.0008)
+        self.spinBox_timeStep.setMinimum(0.0)
         self.spinBox_timeStep.setMaximum(10)
         self.spinBox_timeStep.setValue(0.1)
         self.spinBox_timeStep.setDecimals(2)
         self.spinBox_timeStep.setSingleStep(0.01)
-        self.policyLayout.addWidget(self.spinBox_timeStep, 3, 1, 1, 1)
+        self.policyLayout.addWidget(self.spinBox_timeStep, 4, 1, 1, 1)
+
+        self.label_UIStep = QtWidgets.QLabel(self.centralwidget)
+        self.label_UIStep.setObjectName("label_UIStep")
+        self.label_UIStep.setMargin(1)
+        self.policyLayout.addWidget(self.label_UIStep, 5, 0, 1, 1)
+        self.spinBox_UIStep = QtWidgets.QSpinBox(self.centralwidget)
+        self.spinBox_UIStep.setMinimum(1)
+        self.spinBox_UIStep.setMaximum(1000000)
+        self.spinBox_UIStep.setValue(10)
+        self.policyLayout.addWidget(self.spinBox_UIStep, 5, 1, 1, 1)
 
         spacerItem4 = QtWidgets.QSpacerItem(20, 20, QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         self.policyLayout.addItem(spacerItem4)
@@ -144,12 +169,12 @@ class Controller(QMainWindow):
         self.line_6.setFrameShape(QtWidgets.QFrame.HLine)
         self.line_6.setFrameShadow(QtWidgets.QFrame.Sunken)
         self.line_6.setMinimumWidth(150)
-        self.policyLayout.addWidget(self.line_6, 4, 0, 1, 2)
+        self.policyLayout.addWidget(self.line_6, 6, 0, 1, 2)
 
         # 这个policyControlLayout将被替换为不同策略的控制布局
         self.policyControlLayout = QtWidgets.QGridLayout()                   
         self.policyControlLayout.setObjectName("policyControlLayout")
-        self.policyLayout.addLayout(self.policyControlLayout, 5, 0, 1, 2)
+        self.policyLayout.addLayout(self.policyControlLayout, 7, 0, 1, 2)
 
         self.policySpacerItem = QtWidgets.QSpacerItem(20, 20, QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Expanding)
         self.policyLayout.addItem(self.policySpacerItem)
@@ -424,8 +449,10 @@ class Controller(QMainWindow):
 
         self.label_policyTitle.setText(_translate("EditorWindow", "策略控制"))
         self.label_valueColor.setText(_translate("EditorWindow", "价值分色"))
+        self.label_updateUI.setText(_translate("EditorWindow", "实时UI"))
         self.label_maxReward.setText(_translate("EditorWindow", "最大价值"))
         self.label_timeStep.setText(_translate("EditorWindow", "计算周期"))
+        self.label_UIStep.setText(_translate("EditorWindow", "UI周期"))
         
         self.action_line_chart.setText(_translate("EditorWindow", "折线图"))
         self.menuFigure.setTitle(_translate("EditorWindow", "Figure"))
@@ -442,11 +469,13 @@ class Controller(QMainWindow):
         self.checkBox_showQ.clicked.connect(self.showQ)                         # 显示动作状态价值
         self.pbt_policyColor.clicked.connect(self.setPolicyColor)
         self.checkBox_valueColor.clicked.connect(self.updateGridColorByValue)
+        self.checkBox_updateUI.clicked.connect(self.updateUIRealTime)
         self.action_edit_map.triggered.connect(self.showMapEditor)
         self.pbt_edit.clicked.connect(self.showMapEditor)
         self.map.gridWidget.cubeSelectedSignal.connect(self.showCubeSetting)
         self.spinBox_maxReward.valueChanged.connect(lambda:self.setMaxValue(float(self.spinBox_maxReward.value())))
         self.spinBox_timeStep.valueChanged.connect(lambda:self.setTimeStep(float(self.spinBox_timeStep.value())))
+        self.spinBox_UIStep.valueChanged.connect(lambda:self.setUIStep(int(self.spinBox_UIStep.value())))
         
         self.action_policy_iteration.triggered.connect(lambda: self.loadPolicy(self.policyDict['modelBased']['policyIteration']))
         self.action_value_iteration.triggered.connect(lambda: self.loadPolicy(self.policyDict['modelBased']['valueIteration']))
@@ -462,6 +491,9 @@ class Controller(QMainWindow):
 
     def setTimeStep(self,timeStep):
         self.timeStep = timeStep
+
+    def setUIStep(self,UIStep):
+        self.UIStep = UIStep
 
     def setMaxValue(self,maxValue):
         if maxValue == 0:
@@ -501,6 +533,10 @@ class Controller(QMainWindow):
     def updateGridColorByValue(self):
         self.map.showColorByValue = self.checkBox_valueColor.isChecked()
         self.map.gridWidget.update()
+
+    def updateUIRealTime(self):
+        self.realTimeUI = self.checkBox_updateUI.isChecked()
+        self.spinBox_UIStep.setEnabled(self.realTimeUI)
 
     def refreshPenList(self):
         for i in range(len(self.penList)):
@@ -601,7 +637,7 @@ class Controller(QMainWindow):
 
             # 嵌入新policy面板
             self.policyControlLayout = policy.controlLayout()               
-            self.policyLayout.addLayout(self.policyControlLayout, 5, 0, 1, 2)
+            self.policyLayout.addLayout(self.policyControlLayout, 7, 0, 1, 2)
             policy.controlLayoutInit()                                              # 新策略面板初始化处理
             self.policySelected = policy
         else:

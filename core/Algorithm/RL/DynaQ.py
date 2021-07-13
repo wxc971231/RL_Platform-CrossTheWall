@@ -90,6 +90,7 @@ class DynaQ(BaseModelFreePolicy):
         return self.layout 
         
     def controlLayoutInit(self):
+        self.controller.spinBox_UIStep.setValue(10) # 设定UI更新周期（触发槽函数）
         self.initPolicy()  
         self.initModel()
         self.setLayoutVisiable(True)
@@ -120,6 +121,7 @@ class DynaQ(BaseModelFreePolicy):
             S.value += S.pi[a]*S.Q[a]
         
     def episode(self):
+        stepCnt = 0
         length = 0
         rewards = []
 
@@ -152,20 +154,22 @@ class DynaQ(BaseModelFreePolicy):
                 r,s_ = self.model[(s,a)]
                 a_ = greedyChoise(s_.Q)
                 self.learnFromTuple(s,a,r,s_,a_)
-                        
-            # 在ui显示当前策略
-            if self.controller.timeStep != 0:
-                time.sleep(self.controller.timeStep)
-                self.map.gridWidget.update()
 
+            # 在ui显示当前策略
+            if self.controller.realTimeUI:
+                if self.controller.timeStep > 0:
+                    time.sleep(self.controller.timeStep)
+                if stepCnt % self.controller.UIStep == 0:
+                    self.map.gridWidget.update()
+                
             # 轨迹终止条件
             if S == self.map.endCube:
                 S.agentLocated = False
-                self.map.gridWidget.update()
                 break
             
             S.agentLocated,S_.agentLocated = False,True
             S = S_
+            stepCnt += 1
 
         # 手动终止，清除agent位置标记
         if not self.autoExec:

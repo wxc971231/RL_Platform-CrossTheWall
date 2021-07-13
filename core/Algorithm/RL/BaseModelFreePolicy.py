@@ -12,6 +12,7 @@ class BaseModelFreePolicy(BasePolicy,metaclass = abc.ABCMeta):
         super().__init__(controller) 
 
         self.waveData = WaveData(np.array([],dtype='float64'),np.array([],dtype='float64'))
+        self.controller = controller
         self.monitor = controller.monitor   # 实时折线图监视器
         self.planTimes = 20             # 规划次数
         self.episodeNum = 1             # 批量轨迹学习的轨迹数量
@@ -118,11 +119,14 @@ class BaseModelFreePolicy(BasePolicy,metaclass = abc.ABCMeta):
         return self.MoniLayout
 
     def showMonitor(self):
-        if not self.monitor.updating:
-            self.monitor.initWaves(self.waveData)
-            self.monitor.show()
+        if not self.controller.realTimeUI and self.autoExec:
+            reply = QtWidgets.QMessageBox.information(self.controller,"未开启UI实时更新！","禁用UI实时更新时，禁止查看实时波形",QtWidgets.QMessageBox.Yes)
         else:
-            self.monitor.close()
+            if not self.monitor.updating:
+                self.monitor.initWaves(self.waveData)
+                self.monitor.show()
+            else:
+                self.monitor.close()
 
     def clearMonitor(self):
         self.waveData.clear()

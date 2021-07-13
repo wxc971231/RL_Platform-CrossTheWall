@@ -47,6 +47,7 @@ class ValueIteration(BasePolicy):
         return self.layout 
         
     def controlLayoutInit(self):
+        self.controller.spinBox_UIStep.setValue(1)  # 设定UI更新周期（触发槽函数）
         self.initPolicy()  
         self.setLayoutVisiable(True)
 
@@ -93,7 +94,7 @@ class ValueIteration(BasePolicy):
                     QSorted = sorted(Q.items(), key=lambda Q:Q[1], reverse=True) # 按值降序得元组列表                    
                     cube.value = QSorted[0][1]
         
-        gridWidget.update()
+        
 
     # 根据bellman optimal equation迭代优化价值函数收敛到 V*
     def optimalValue(self):
@@ -101,15 +102,21 @@ class ValueIteration(BasePolicy):
         self.updateValue()
         newV = self.map.gridWidget.getSumValue()
         self.label_info.setText('价值迭代1; 修正{}'.format(round(newV - lastV,5)))
+        self.map.gridWidget.update()
 
-        num = 2
+        stepCnt = 2
         while self.autoExec:
             lastV = newV
             self.updateValue()
             newV = self.map.gridWidget.getSumValue()
-            self.label_info.setText('价值迭代{}; 修正{}'.format(num,round(newV - lastV,5)))
-            num += 1
-            time.sleep(self.controller.timeStep)
+            self.label_info.setText('价值迭代{}; 修正{}'.format(stepCnt,round(newV - lastV,5)))
+            stepCnt += 1
+
+            if self.controller.realTimeUI:
+                if self.controller.timeStep > 0:
+                    time.sleep(self.controller.timeStep)
+                if stepCnt % self.controller.UIStep == 0:
+                    self.map.gridWidget.update()
         
     # 先用V*构造Q*，再贪心得到最优策略pi*
     def optimalPolicy(self):

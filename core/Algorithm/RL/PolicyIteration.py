@@ -6,11 +6,12 @@ import time
 class PolicyIteration(BasePolicy):
     def __init__(self,controller):
         super().__init__(controller) 
-
+        self.controller = controller
         self.improveTimes = 0       # 策略提升次数
         self.evaluationTimes = 0    # 策略评估次数
         self.sumValue = 0           # 当前总状态价值
 
+        self.stepCnt = 0            # 策略评估计数
 
     # 控制UI（执行此策略时嵌入到controller窗口中）
     def controlLayout(self):
@@ -70,6 +71,7 @@ class PolicyIteration(BasePolicy):
         return self.layout
 
     def controlLayoutInit(self):
+        self.controller.spinBox_UIStep.setValue(1)  # 设定UI更新周期（触发槽函数）
         self.initPolicy()  
         self.setLayoutVisiable(True)
 
@@ -80,6 +82,7 @@ class PolicyIteration(BasePolicy):
     def autoToggle(self,mode):
         if self.autoExec:
             self.autoExec = False
+            self.stepCnt = 0
             self.pbt_autoEvaluation.setEnabled(True)
             self.pbt_autoIteration.setEnabled(True)
             if mode == 'policy iteratioin':
@@ -124,7 +127,13 @@ class PolicyIteration(BasePolicy):
         for i in range(gridWidget.row):
             for j in range(gridWidget.colum):
                 gridWidget.cubes[i][j].value = newValue[i][j]
-        gridWidget.update()
+
+        if self.controller.realTimeUI:
+            if self.controller.timeStep > 0:
+                time.sleep(self.controller.timeStep)
+            if self.stepCnt % self.controller.UIStep == 0:
+                self.map.gridWidget.update()
+        self.stepCnt += 1
 
         sumValue = self.map.gridWidget.getSumValue()
         valueChanged = self.sumValue - sumValue
@@ -134,6 +143,14 @@ class PolicyIteration(BasePolicy):
         
         return valueChanged
 
+    # 无限策略评估
+    def autoPolicyEvaluation(self):
+        # 如果在自动执行中重新加载地图，可能报越界错误，捕获异常pass掉
+        try:
+            while self.autoExec:
+                self.policyEvaluationOneStep()
+        except IndexError:
+            pass
 
     # 执行一次策略提升
     def policyImprove(self):
@@ -156,7 +173,6 @@ class PolicyIteration(BasePolicy):
                     # 在Q上贪心来更新策略pi，相同价值的动作平分概率
                     cube.updatePolicyByQ()
                     self.pi[row][colum] = cube.pi.copy()
-
         gridWidget.update()
 
         sumValue = self.map.gridWidget.getSumValue()
@@ -172,7 +188,7 @@ class PolicyIteration(BasePolicy):
     # 评估当前策略至价值收敛
     def policyEvaluation(self):
         while self.autoExec and abs(self.policyEvaluationOneStep()) > 0.1:
-            time.sleep(self.controller.timeStep)
+            pass
         return self.map.gridWidget.getSumValue()
 
     # 自动进行策略迭代
@@ -190,16 +206,6 @@ class PolicyIteration(BasePolicy):
 
             self.autoExec = False
             self.pbt_autoEvaluation.setEnabled(True)
-        except IndexError:
-            pass
-
-    # 无限策略评估
-    def autoPolicyEvaluation(self):
-        # 如果在自动执行中重新加载地图，可能报越界错误，捕获异常pass掉
-        try:
-            while self.autoExec:
-                self.policyEvaluationOneStep()
-                time.sleep(self.controller.timeStep)
         except IndexError:
             pass
 

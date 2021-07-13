@@ -81,6 +81,7 @@ class Sarsa(BaseModelFreePolicy):
         return self.layout 
 
     def controlLayoutInit(self):
+        self.controller.spinBox_UIStep.setValue(10) # 设定UI更新周期（触发槽函数）
         self.initPolicy()  
         self.setLayoutVisiable(True)
 
@@ -106,6 +107,7 @@ class Sarsa(BaseModelFreePolicy):
             S.value += S.pi[a]*S.Q[a]
 
     def episode(self):
+        stepCnt = 0
         length = 0
         rewards = []
 
@@ -131,18 +133,20 @@ class Sarsa(BaseModelFreePolicy):
             self.learnFromTuple(S,A,R,S_,A_)
             
             # 在ui显示当前策略
-            if self.controller.timeStep != 0:
-                time.sleep(self.controller.timeStep)
-                self.map.gridWidget.update()
-
+            if self.controller.realTimeUI:
+                if self.controller.timeStep > 0:
+                    time.sleep(self.controller.timeStep)
+                if stepCnt % self.controller.UIStep == 0:
+                    self.map.gridWidget.update()
+                
             # 轨迹终止条件
             if S == self.map.endCube:
                 S.agentLocated = False
-                self.map.gridWidget.update()
                 break
 
             S.agentLocated,S_.agentLocated = False,True
             S,A = S_,A_
+            stepCnt += 1
 
         # 手动终止，清除agent位置标记
         if not self.autoExec:
