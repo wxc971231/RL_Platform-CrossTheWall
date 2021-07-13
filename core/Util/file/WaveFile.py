@@ -46,6 +46,7 @@ class WaveFile():
             return text + 'Failed! UI版本错误！',None
         
         waveData = WaveData(np.array(self.returnList),np.array(self.lengthList))
-        waveData.path = self.filePath
-        waveData.name = self.fileName
+        waveData.name = self.fileName = filePath[filePath.rfind('/')+1:-3]
+        waveData.path = self.filePath = filePath
+
         return text + 'Success!',waveData
