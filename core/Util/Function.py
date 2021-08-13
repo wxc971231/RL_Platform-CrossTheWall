@@ -27,7 +27,7 @@ def greedyChoise(choiceValueDict):
 
 # epsilon-贪心选择动作
 def getActionByEpsilonGreedy(epsilon,cube):
-    if np.random.binomial(1,epsilon) == 1:
+    if epsilon > np.random.uniform(0,1):
         action = randomChoice([a for a in cube.action if cube.nextCubeDict[a] != None])
     else:
         action = greedyChoise(cube.Q)
