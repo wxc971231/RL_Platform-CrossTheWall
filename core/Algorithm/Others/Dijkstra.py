@@ -3,6 +3,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from core.Algorithm.RL import BasePolicy
 import threading
+import numpy as np
 import time
 
 class Dijkstra(BasePolicy):
@@ -60,10 +61,9 @@ class Dijkstra(BasePolicy):
         self.pbt_toggleAuto.setText('start')
         self.map.gridWidget.update()
         
-
     def dijkstra(self,mode):
-        endCude = self.map.endCube
-        if endCude == None:
+        endCudeList = self.map.endCubeList
+        if endCudeList == []:
             return
         
         cubes = self.map.gridWidget.cubes
@@ -80,39 +80,37 @@ class Dijkstra(BasePolicy):
                 dist_row.append(10000)
             visitedSet.append(set_row)
             dist.append(dist_row)
-        
+    
         # 初始化目前已知最短距离(endCube及其所有前驱)
-        dist[endCude.row][endCude.colum] = 0
-        visitedSet[endCude.row][endCude.colum] = True
-        for pc in endCude.priorCubeDict:
-            dist[pc.row][pc.colum] = endCude.distance(pc)
-            for a in pc.action:
-                pc.pi[a] = 0
-            pc.pi[pc.row - endCude.row] = 1
-        
+        for endCube in endCudeList:
+            dist[endCube.row][endCube.colum] = 0
+            for pc in endCube.priorCubeDict:
+                if pc.distance(endCube) < dist[pc.row][pc.colum]:
+                    for a in pc.action:
+                        pc.pi[a] = 0
+                    pc.pi[pc.row - endCube.row] = 1
+            
         # 从endCube开始反向找出各点到它的最短路
-        visitCube,visit_r,visit_c = endCude,endCude.row,endCude.colum
+        visitCube,visit_r,visit_c = endCudeList[0],endCudeList[0].row,endCudeList[0].colum
+        visitedSet[visitCube.row][visitCube.colum] = True
         while visitCube != None and self.autoExec:
 
             # 显示本轮新加入visitedSet的点
             visitCube.agentLocated = True
+            visitedSet[visit_r][visit_c] = True
             gridWidget.update()
             if mode == 'normal':
                 time.sleep(self.controller.timeStep)
             
-            visitedSet[visit_r][visit_c] = True
-
             # 遍历本轮访问点所有前驱，尝试从visitCube中转以缩短路程
-            for cube in visitCube.priorCubeDict:
-                r,c = cube.row,cube.colum
-                if visitedSet[cube.row][cube.colum] == False: 
-                    if dist[visit_r][visit_c] + visitCube.distance(cube) < dist[r][c]:
-                        dist[r][c] = dist[visit_r][visit_c] + visitCube.distance(cube)
-
-                        for a in cube.action:
-                            cube.pi[a] = 0
-                        cube.pi[r - visit_r] = 1
-                            
+            for pc in visitCube.priorCubeDict:
+                r,c = pc.row,pc.colum
+                if visitedSet[pc.row][pc.colum] == False: 
+                    if dist[visit_r][visit_c] + pc.distance(visitCube) < dist[r][c]:
+                        dist[r][c] = dist[visit_r][visit_c] + pc.distance(visitCube)
+                        for a in pc.action:
+                            pc.pi[a] = 0
+                        pc.pi[r - visit_r] = 1  
             visitCube.agentLocated = False    
             
             # 遍历找出当前最短路径点作为下一轮访问点
@@ -125,30 +123,38 @@ class Dijkstra(BasePolicy):
                         visitCube = cubes[r][c]
                         visit_r,visit_c = visitCube.row,visitCube.colum        
         
-        
         # 补充所有等路程动作
         for r in range(gridWidget.row):
-            for c in range(gridWidget.colum-1): # 最后一列不要补充，否则不能一步到终点
+            for c in range(gridWidget.colum): # 最后一列不要补充，否则不能一步到终点
                 cube = cubes[r][c]
                 if cube.isPassable:
                     n = 0
-                    for a in cube.action:
-                        cube.pi[a] = 0
-                        nc = cube.nextCubeDict[a]
-                        if nc != None and nc != cube and abs(dist[nc.row][nc.colum] + cube.distance(nc) - dist[r][c]) < 1e-3:
-                            cube.pi[a] = 1
-                            n += 1
-
+                    if c < gridWidget.colum-1:   
+                        for a in cube.action:
+                            cube.pi[a] = 0
+                            ncList = cube.nextCubeDict[a]
+                            if ncList != []:
+                                nc = ncList[0][0]
+                                if nc != None and nc != cube and abs(dist[nc.row][nc.colum] + cube.distance(nc) - dist[r][c]) < 1e-3:
+                                    cube.pi[a] = 1
+                                    n += 1
+                    else:
+                        for a in cube.action:
+                            cube.pi[a] = 0
+                            for endCube in endCudeList:
+                                if dist[r][c] == cube.distance(endCube):
+                                    cube.pi[r - endCube.row] = 1
+                                    n += 1
                     for a in cube.action:
                         if cube.pi[a] != 0:
                             cube.pi[a] = 1/n
-    
+
         # 从UI清除最后一个访问点
         gridWidget.update()
 
+        # 结束执行子线程
         self.autoExec = False
 
     def doDij(self):
         self.dijkstra('normal')
         self.pbt_toggleAuto.setText('start')
-        

@@ -3,12 +3,12 @@ from sklearn.metrics import pairwise
 import numpy as np
 import math
 from core.Util.map import Cube
-from core.Util.Function import valueLimit
+from core.Util.Function import valueLimit,randomChoice
 
 # 地图网格对象
 class GridWidget(QtWidgets.QWidget):
     cubeSelectedSignal = QtCore.pyqtSignal() 
-    cubeUpdateSignal = QtCore.pyqtSignal() 
+    cubeUpdateSignal = QtCore.pyqtSignal(bool) 
 
     def __init__(self,row,colum,map):
         super().__init__()
@@ -29,7 +29,7 @@ class GridWidget(QtWidgets.QWidget):
 
         self.cubes = []             # 方格二维列表
         self.cubeArray = None       # 方格坐标数组
-        self.distanceArray = np.zeros((row,colum,2),dtype='int')   # 距离邻接矩阵
+        self.distanceArray = np.zeros((row,colum,row,colum),dtype='int')   # 距离邻接矩阵
 
         self.setMouseTracking(True) # 允许鼠标追踪事件
         self.painter = QtGui.QPainter(self)
@@ -38,6 +38,16 @@ class GridWidget(QtWidgets.QWidget):
         self.showWithColor = True   # 分色显示
         self.showWithValue = False  # 价值分色显示
         self.maxValue = 5           # 价值分色显示使用的最大绝对价值
+
+    # 初始化gridWidget对象，在加载或新建地图时调用
+    def initGrid(self,row,colum):
+        self.cubeSelected = None
+        self.row = row          
+        self.colum = colum  
+
+        self.cubes = []
+        self.initCubes()
+        self.update()
 
     def initCubes(self):
         for i in range(self.row):
@@ -53,13 +63,42 @@ class GridWidget(QtWidgets.QWidget):
                 cube.storeNeighborCube()
                 cube.resetPolicy()
 
-        points = np.zeros((self.row,self.colum,2),dtype='int')
-        for r in range(self.row):
-            for c in range(self.colum):
-                points[r,c] = r,c
+        columArray = np.arange(self.colum)
+        rowArray = np.arange(self.row)
+        columArray,rowArray = np.meshgrid(columArray,rowArray)
+        self.cubeArray = np.vstack([rowArray.ravel(), columArray.ravel()]).T
+        self.distanceArray = pairwise.pairwise_distances(self.cubeArray,metric='euclidean').reshape(self.row,self.colum,self.row,self.colum)
 
-        self.cubeArray = points.reshape(self.row*self.colum,2)
-        self.distanceArray = pairwise.pairwise_distances(self.cubeArray,metric='euclidean')
+    # 下一个方格及概率
+    # 返回 [row,colum] 处执行 action 后转移到的方格及转移概率列表 [(s_,p),...]
+    def nextCubeAndProbList(self,row,colum,action):
+        cube = self.cubes[row][colum]
+        
+        # 终点直接回起点
+        if cube.isEnd:    
+            nextCubes = []
+            for cube in self.map.startCubeList:
+                nextCubes.append((cube,1/len(self.map.startCubeList)))
+            return nextCubes
+
+        # 计算转移到的位置
+        next_row = row - action
+        next_colum = colum + 1
+        
+        #next_row = valueLimit(next_row,self.row-1,0)
+        if next_row < 0 or next_row > self.row-1:
+            return []
+        
+        if next_colum > self.colum-1:
+            next_colum = self.colum-1
+        elif not self.cubes[next_row][next_colum].isPassable:
+            next_colum = colum
+        
+        # 这里允许顶着墙走导致不动的情况，正常返回方格，否则依概率选择动作时会报错
+        #if row == next_row and colum == next_colum:
+        #    return None
+
+        return [(self.cubes[next_row][next_colum],1)]
 
     # 更新相邻可达方格，地图编辑完成时调用
     def reStoreAllNeighborCube(self):
@@ -73,6 +112,11 @@ class GridWidget(QtWidgets.QWidget):
             for c in range(self.colum):
                 cube = self.cubes[r][c]
                 cube.storeNeighborCube()
+        
+        for r in range(self.row):
+            for c in range(self.colum):
+                cube = self.cubes[r][c]
+                cube.resetPolicy()
 
     # 绘制事件
     def paintEvent(self,event):
@@ -100,14 +144,11 @@ class GridWidget(QtWidgets.QWidget):
             else:
                 self.cubeSelected = self.cubes[row][colum]
 
-                # 如果是画笔模式，设置当前cube的画笔和当前选中画笔一致('wall'画笔仅用于添加属性，不修改cube画笔名)
+                # 如果是画笔模式，设置当前cube的画笔和当前选中画笔一致
                 if self.isDrawingMode:
-                    if self.penSelected.name != 'wall':
-                        if self.cubeSelected.penName != self.penSelected:
-                            self.cubes[row][colum].updateWithPen(self.penSelected)
-                            self.cubeUpdateSignal.emit()
-                    else:
-                        self.cubes[row][colum].isPassable = False  
+                    if self.cubeSelected.penName != self.penSelected:
+                        mapSaved = not self.cubes[row][colum].updateWithPen(self.penSelected)
+                        self.cubeUpdateSignal.emit(mapSaved)
 
                 # 如果是编辑模式，设置当前cube为选中状态
                 else:
@@ -132,8 +173,8 @@ class GridWidget(QtWidgets.QWidget):
                 if colum >= 0 and colum <= self.colum-1 and row >= 0 and row <= self.row-1:
                     self.cubeSelected = self.cubes[row][colum]
                     if self.isDrawingMode:
-                        self.cubes[row][colum].updateWithPen(self.penSelected)
-                        self.cubeUpdateSignal.emit()
+                        mapSaved = not self.cubes[row][colum].updateWithPen(self.penSelected)
+                        self.cubeUpdateSignal.emit(mapSaved)
                         self.update()
         
     # 鼠标滚轮滚动事件
@@ -150,16 +191,6 @@ class GridWidget(QtWidgets.QWidget):
 
             self.zoomFlag = True            
             self.update()
-
-    # 初始化map对象，在加载或新建地图时调用
-    def gridInit(self,row,colum):
-        self.cubeSelected = None
-        self.row = row          
-        self.colum = colum  
-
-        self.cubes = []
-        self.initCubes()
-        self.update()
 
     # 绘制地图网格
     def drawGrid(self,painter):
@@ -209,15 +240,19 @@ class GridWidget(QtWidgets.QWidget):
                 cube = self.cubeSelected
                 if cube != None and cube.isPassable:
                     for a in cube.action:
-                        nc = cube.nextCubeDict[a]
-                        if nc != None:
-                            # 显示动作状态价值
-                            painter.setPen(QtGui.QColor(0,100,100))
-                            painter.setFont(QtGui.QFont('微软雅黑', 0.1*cube.l))
-                            painter.drawText(QtCore.QRect(nc.x+0.1*nc.l,nc.y+0.1*nc.l,0.8*nc.l,0.8*nc.l),QtCore.Qt.AlignHCenter | QtCore.Qt.AlignTop ,str(round(cube.Q[a],3)))
-                            painter.drawText(QtCore.QRect(nc.x+0.1*nc.l,nc.y+0.1*nc.l,0.8*nc.l,0.8*nc.l),QtCore.Qt.AlignHCenter | QtCore.Qt.AlignBottom,str(round(cube.distance(nc),3)))
-                            painter.drawText(QtCore.QRect(nc.x+0.1*nc.l,nc.y+0.1*nc.l,0.8*nc.l,0.8*nc.l),QtCore.Qt.AlignVCenter | QtCore.Qt.AlignLeft,str(round(cube.pi[a],3)))
-
+                        for nc,p in cube.nextCubeDict[a]:
+                            if nc != None:
+                                # 有转移 cube,a -> nc, 在nc位置显示信息
+                                painter.setPen(QtGui.QColor(0,100,100))
+                                painter.setFont(QtGui.QFont('微软雅黑', 0.1*cube.l))
+                                # 上：q(cube,a)
+                                painter.drawText(QtCore.QRect(nc.x+0.1*nc.l,nc.y+0.1*nc.l,0.8*nc.l,0.8*nc.l),QtCore.Qt.AlignHCenter | QtCore.Qt.AlignTop ,str(round(cube.Q[a],3)))
+                                # 下：distance(cube,nc)
+                                painter.drawText(QtCore.QRect(nc.x+0.1*nc.l,nc.y+0.1*nc.l,0.8*nc.l,0.8*nc.l),QtCore.Qt.AlignHCenter | QtCore.Qt.AlignBottom,str(round(cube.distance(nc),3)))
+                                # 左：pi(a|cube)
+                                painter.drawText(QtCore.QRect(nc.x+0.1*nc.l,nc.y+0.1*nc.l,0.8*nc.l,0.8*nc.l),QtCore.Qt.AlignVCenter | QtCore.Qt.AlignLeft,str(round(cube.pi[a],3)))
+                                # 右：p(nc|cube,a)
+                                painter.drawText(QtCore.QRect(nc.x+0.1*nc.l,nc.y+0.1*nc.l,0.8*nc.l,0.8*nc.l),QtCore.Qt.AlignVCenter | QtCore.Qt.AlignRight,str(round(p,3)))
 
             # 绘制策略
             if self.map.showPolicy:
@@ -232,26 +267,27 @@ class GridWidget(QtWidgets.QWidget):
                         # 所有上一步可达
                         if cube != None:
                             for pc in cube.priorCubeDict:
-                                painter.setPen(QPen(QColor(self.map.policyColor), 0.05*self.cubes[0][0].l, QtCore.Qt.SolidLine)) 
+                                painter.setPen(QtGui.QPen(QtGui.QColor(self.map.policyColor), 0.05*self.cubes[0][0].l, QtCore.Qt.SolidLine)) 
                                 painter.drawLine(cube.centerX, cube.centerY, pc.centerX, pc.centerY)
 
-                                painter.setPen(QPen(QColor(80,80,80), 0.2*self.cubes[0][0].l, QtCore.Qt.SolidLine)) 
+                                painter.setPen(QtGui.QPen(QtGui.QColor(80,80,80), 0.1*self.cubes[0][0].l, QtCore.Qt.SolidLine)) 
                                 painter.drawPoint(pc.centerX,pc.centerY)
                         '''
-                        
-                        if cube != None and cube != self.map.endCube and cube.isPassable:                            
+                        # 所有下一步可达
+                        if cube != None and cube not in self.map.endCubeList and cube.isPassable:                            
                             for a in cube.action:
-                                nc = cube.nextCubeDict[a]
-                                if cube.pi[a] != 0 and nc != None:
-                                    # 在下一个方块中心画一个点
-                                    painter.setPen(QtGui.QPen(QtCore.Qt.black, 0.1*cube.l, QtCore.Qt.SolidLine)) 
-                                    painter.drawPoint(nc.centerX, nc.centerY) 
-                                    # 连线
-                                    painter.setPen(QtGui.QPen(QtGui.QColor(self.map.policyColor), 0.05*self.cubes[0][0].l, QtCore.Qt.SolidLine)) 
-                                    painter.drawLine(cube.centerX, cube.centerY, nc.centerX, nc.centerY)
+                                if cube.pi[a] != 0:
+                                    for nc,p in cube.nextCubeDict[a]:
+                                        if nc != None:
+                                            # 在下一个方块中心画一个点
+                                            painter.setPen(QtGui.QPen(QtCore.Qt.black, 0.1*cube.l, QtCore.Qt.SolidLine)) 
+                                            painter.drawPoint(nc.centerX, nc.centerY) 
+                                            # 连线
+                                            painter.setPen(QtGui.QPen(QtGui.QColor(self.map.policyColor), 0.05*self.cubes[0][0].l, QtCore.Qt.SolidLine)) 
+                                            painter.drawLine(cube.centerX, cube.centerY, nc.centerX, nc.centerY)
 
-                                    painter.drawText(QtCore.QRect(nc.x+0.1*nc.l,nc.y+0.1*nc.l,0.8*nc.l,0.8*nc.l),QtCore.Qt.AlignHCenter | QtCore.Qt.AlignTop ,str(round(cube.pi[a],3)))
-
+                                            painter.drawText(QtCore.QRect(nc.x+0.1*nc.l,nc.y+0.1*nc.l,0.8*nc.l,0.8*nc.l),QtCore.Qt.AlignHCenter | QtCore.Qt.AlignTop ,str(round(cube.pi[a],3)))
+                        
                     # 显示此格开始的所有可能轨迹(BFS)
                     else:
                         if self.cubeSelected != None and self.cubeSelected.isPassable:
@@ -260,18 +296,19 @@ class GridWidget(QtWidgets.QWidget):
                             
                             while nextCubeQueue != []:
                                 cube = nextCubeQueue[0]
-                                if cube != self.map.endCube:
+                                if cube not in self.map.endCubeList:
                                     for a in cube.action:
-                                        nc = cube.nextCubeDict[a]
-                                        if cube.pi[a] != 0 and nc != None:
-                                            painter.setPen(QtGui.QPen(QtGui.QColor(self.map.policyColor), 0.05*self.cubes[0][0].l, QtCore.Qt.SolidLine)) 
-                                            painter.drawLine(cube.centerX, cube.centerY, nc.centerX, nc.centerY)
-                                            if not nc.visited:
-                                                nextCubeQueue.append(nc)
-                                                nc.visited = True
-                                                
-                                                painter.setPen(QtGui.QPen(QtCore.Qt.black, 0.1*cube.l, QtCore.Qt.SolidLine)) 
-                                                painter.drawPoint(nc.centerX, nc.centerY) 
+                                        if cube.pi[a] != 0:
+                                            for nc,p in cube.nextCubeDict[a]:
+                                                if nc != None:
+                                                    painter.setPen(QtGui.QPen(QtGui.QColor(self.map.policyColor), 0.05*self.cubes[0][0].l, QtCore.Qt.SolidLine)) 
+                                                    painter.drawLine(cube.centerX, cube.centerY, nc.centerX, nc.centerY)
+                                                    if not nc.visited:
+                                                        nextCubeQueue.append(nc)
+                                                        nc.visited = True
+                                                        
+                                                        painter.setPen(QtGui.QPen(QtCore.Qt.black, 0.1*cube.l, QtCore.Qt.SolidLine)) 
+                                                        painter.drawPoint(nc.centerX, nc.centerY) 
 
                                 nextCubeQueue.remove(cube)
 
@@ -280,49 +317,12 @@ class GridWidget(QtWidgets.QWidget):
                     for i in range(self.row):
                         for j in range(self.colum):
                             cube = self.cubes[i][j]    
-                            if cube.isPassable and cube != self.map.endCube:
+                            if cube.isPassable and cube not in self.map.endCubeList:
                                 for a in cube.action:
-                                    nc = cube.nextCubeDict[a]
-                                    if cube.pi[a] != 0 and nc != None:
-                                        painter.drawLine(cube.centerX, cube.centerY, nc.centerX, nc.centerY)
-
-    # 返回一个方格二维列表副本
-    def cubesCopy(self):
-        cubesBackup = []
-        for i in range(self.row):
-            colum_cubes = []
-            for j in range(self.colum):
-                cube = self.cubesp[i][j].copy()
-                colum_cubes.append(cube)
-            cubesBackup.append(colum_cubes)
-        return cubesBackup
-    
-    # 下一个方格（row,colum处执行action后）
-    def nextCube(self,row,colum,action):
-        cube = self.cubes[row][colum]
-        
-        # 终点直接回起点
-        if cube.isEnd:      
-            return self.map.startCube
-
-        next_row = row - action
-        next_colum = colum + 1
-        
-        #next_row = valueLimit(next_row,self.row-1,0)
-        if next_row < 0 or next_row > self.row-1:
-            return None
-        
-        if next_colum > self.colum-1:
-            next_colum = self.colum-1
-        elif not self.cubes[next_row][next_colum].isPassable:
-            next_colum = colum
-        
-        # 这里允许顶着墙走导致不动的情况，正常返回方格，否则依概率选择动作时会报错
-        # 在cube.resetPolicy中通过Q值限制，禁止不动
-        #if row == next_row and colum == next_colum:
-        #    return None
-
-        return self.cubes[next_row][next_colum]
+                                    if cube.pi[a] != 0:
+                                        for nc,p in cube.nextCubeDict[a]:
+                                            if nc != None:
+                                                painter.drawLine(cube.centerX, cube.centerY, nc.centerX, nc.centerY)
             
     # 获取当前总价值
     def getSumValue(self):

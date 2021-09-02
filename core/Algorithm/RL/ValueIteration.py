@@ -82,20 +82,19 @@ class ValueIteration(BasePolicy):
                     Q = cube.Q
                     
                     for a in cube.action:
-                        nc = cube.nextCubeDict[a]
-                        if nc != None:
-                            disCost = (cube != self.map.endCube)*self.map.disCostDiscount*cube.distance(nc)
-
-                            # Q(s,a) = R(s,a) + gamma*sum{p(s'|s,a)*V(s')}
-                            Q[a] = cube.reward - disCost + self.gamma*nc.value  
-                            #cube.updatePolicyByQ()
+                        # Q(s,a) = R(s,a) + gamma*sum{p(s'|s,a)*V(s')}
+                        if cube.nextCubeDict[a] != []:
+                            Q[a] = cube.reward
+                            for nc,p in cube.nextCubeDict[a]:
+                                if nc != None:
+                                    disCost = (cube not in self.map.endCubeList)*self.map.disCostDiscount*cube.distance(nc)
+                                    Q[a] = Q[a] - p*disCost + p*self.gamma*nc.value  
+                                    #cube.updatePolicyByQ()
 
                     # v(s) = max_a(Q(s,a))
                     QSorted = sorted(Q.items(), key=lambda Q:Q[1], reverse=True) # 按值降序得元组列表                    
                     cube.value = QSorted[0][1]
         
-        
-
     # 根据bellman optimal equation迭代优化价值函数收敛到 V*
     def optimalValue(self):
         lastV = self.map.gridWidget.getSumValue()
@@ -129,16 +128,18 @@ class ValueIteration(BasePolicy):
                     # 用V*构造Q*
                     Q = cube.Q
                     for a in cube.action:
-                        nc = cube.nextCubeDict[a]
-                        if nc != None:
-                            disCost = (cube != self.map.endCube)*self.map.disCostDiscount*cube.distance(nc)
-
-                            # Q(s,a) = R(s,a) + gamma*sum{p(s'|s,a)*V(s')}
-                            Q[a] = cube.reward - disCost + self.gamma*nc.value  
+                        # Q(s,a) = R(s,a) + gamma*sum{p(s'|s,a)*V(s')}
+                        if cube.nextCubeDict[a] != []:
+                            Q[a] = cube.reward
+                            for nc,p in cube.nextCubeDict[a]:
+                                if nc != None:
+                                    disCost = (cube not in self.map.endCubeList)*self.map.disCostDiscount*cube.distance(nc)
+                                    Q[a] = Q[a] - p*disCost + p*self.gamma*nc.value  
 
                     # 在Q*上贪心得到策略pi*，相同价值的动作平分概率
                     cube.updatePolicyByQ()
                     self.pi[row][colum] = cube.pi
+
         gridWidget.update()
 
     def autoValueIteration(self):

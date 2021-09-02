@@ -6,15 +6,16 @@ class Map(QObject):
 
     def __init__(self,mapEditor):
         super().__init__() 
-        self.penDict = {'default':Pen('#C8C8C8','default',[0,0,0,0],True,0),
-                        'wall':Pen('#646464','wall',[0,0,0,0],False,0),
-                        'modified':Pen('#d2ffe3','modified',[0,0,0,0],True,0)}  # 默认画笔字典
+        self.defaultPens = ['default','wall','modified']
+        self.penDict = {'default':Pen('#C8C8C8','default',[0,0,0,0],True,False,False,0),
+                        'wall':Pen('#646464','wall',[0,0,0,0],False,False,False,0),
+                        'modified':Pen('#d2ffe3','modified',[0,0,0,0],True,False,False,0)}  # 默认画笔字典
 
         self.mapEditor = mapEditor
         self.controller = mapEditor.controller
 
-        self.startCube = None               # 起点
-        self.endCube = None                 # 终点
+        self.startCubeList = None           # 起点
+        self.endCubeList = None             # 终点
         self.disCostDiscount = 1.0          # 路程折扣
         
         self.isVisible = False              # 是否显示地图网格
@@ -33,7 +34,21 @@ class Map(QObject):
         self.path = ''                      # 地图配置文件路径
 
         self.gridWidget = GridWidget(1,1,self) # 地图网格
+    
+    def getMapPara(self):
+        startCubesPos,endCubesPos = [],[]
+        for cube in self.startCubeList:
+            startCubesPos.append([cube.row,cube.colum])
+        for cube in self.endCubeList:
+            endCubesPos.append([cube.row,cube.colum])
+        return MapPara([self.gridWidget.row,self.gridWidget.colum],startCubesPos,endCubesPos,self.disCostDiscount)
 
+class MapPara():
+    def __init__(self,size,startCubesPos,endCubesPos,disCostDiscount):
+        self.size = size
+        self.startCubePosList = startCubesPos
+        self.endCubePosList = endCubesPos
+        self.disCostDiscount = disCostDiscount
 
 
         

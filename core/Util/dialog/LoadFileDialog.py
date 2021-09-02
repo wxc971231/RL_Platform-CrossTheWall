@@ -20,7 +20,7 @@ class LoadFileDialog(QtWidgets.QMainWindow,metaclass = QABCMeta):
             self.statusBar().showMessage(str(self.treeWidget.folderPath))
     
     # 选中item
-    def chooseItem(self,mode):
+    def chooseItem(self):
         try:
             isFile,nodePath = self.treeWidget.nodeSelected()
         except TypeError:
@@ -30,9 +30,6 @@ class LoadFileDialog(QtWidgets.QMainWindow,metaclass = QABCMeta):
             self.textBrowser.setText(nodePath)
         else:
             self.statusBar().showMessage(nodePath) 
-
-        if isFile and mode == 'doubleClick':
-            self.loadFile()
 
         return isFile,nodePath
 
@@ -86,13 +83,24 @@ class LoadMapDialog(LoadFileDialog):
         self.treeWidget.doubleClicked.connect(lambda:self.chooseItem('doubleClick'))
 
     def chooseItem(self,mode):
-        isFile,nodePath = super().chooseItem(mode)
+        isFile,nodePath = super().chooseItem()
         # 接收读取的内容，并显示到多行文本框中
         if isFile and nodePath[-4:] == '.txt':
             with open(nodePath,'r') as f:
                 data = f.read()
-                self.textBrowser.setText(data)
-        
+
+                # doubleClick时，第二下按下时执行下面的loadFile，可能显示一些错误提示；
+                # 第二下松开时会触发singleClick，若此时有错误提示就不显示文件内容，以免覆盖报错
+                currentText = self.textBrowser.toPlainText()
+                if currentText != '' and currentText.count('\n') == 0:
+                    self.textBrowser.setText(currentText+'\n'+'-'*65+'\n'+data)
+                else:
+                    self.textBrowser.setText(data)
+
+        if isFile and mode == 'doubleClick':
+            self.loadFile()
+
+
     def loadFile(self):
         self.loadMapSignal.emit(self.treeWidget.filePath)
 
@@ -151,7 +159,7 @@ class LoadWaveDialog(LoadFileDialog):
         self.pbt_load.clicked.connect(self.loadFile)
         self.pbt_all.clicked.connect(self.treeWidget.selectAllFiles)
         self.pbt_clear.clicked.connect(self.treeWidget.selectNoFiles)
-        self.treeWidget.clicked.connect(lambda:self.chooseItem('singleClick'))
+        self.treeWidget.clicked.connect(lambda:self.chooseItem())
 
     def loadFile(self):
         self.loadWaveSignal.emit(self.treeWidget.wavePathList)

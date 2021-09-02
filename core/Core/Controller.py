@@ -36,9 +36,9 @@ class Controller(QMainWindow):
         self.setupUi()
 
         # 策略列表
-        self.policyControlLayout = None # 选择策略的控制面板（需要嵌入controller UI）
-        self.policySelected = None      # 当前选择的策略
-        self.policyDict = {'modelBased':{},'modelFree':{},'others':{}}
+        self.algorithmControlLayout = None # 选择策略的控制面板（需要嵌入controller UI）
+        self.algorithmSelected = None      # 当前选择的策略
+        self.algorithmDict = {'modelBased':{},'modelFree':{},'others':{}}
         policyIteration = PolicyIteration(self)
         valueIteration = ValueIteration(self)
         mcPolicyIteration = MCPolicyIteration(self)
@@ -48,15 +48,15 @@ class Controller(QMainWindow):
         dynaQ = DynaQ(self)
         qlearning = QLearning(self)
         dijkstra = Dijkstra(self)
-        self.policyDict['modelBased']['policyIteration'] = policyIteration
-        self.policyDict['modelBased']['valueIteration'] = valueIteration
-        self.policyDict['modelFree']['mcPolicyIteration']   = mcPolicyIteration
-        self.policyDict['modelFree']['MCES']  = mces
-        self.policyDict['modelFree']['Sarsa']  = sarsa
-        self.policyDict['modelFree']['DynaQPrior']  = dynaQPrior
-        self.policyDict['modelFree']['DynaQ']  = dynaQ
-        self.policyDict['modelFree']['QLearning'] = qlearning
-        self.policyDict['others']['dijkstra'] = dijkstra
+        self.algorithmDict['modelBased']['policyIteration'] = policyIteration
+        self.algorithmDict['modelBased']['valueIteration'] = valueIteration
+        self.algorithmDict['modelFree']['mcPolicyIteration']   = mcPolicyIteration
+        self.algorithmDict['modelFree']['MCES']  = mces
+        self.algorithmDict['modelFree']['Sarsa']  = sarsa
+        self.algorithmDict['modelFree']['DynaQPrior']  = dynaQPrior
+        self.algorithmDict['modelFree']['DynaQ']  = dynaQ
+        self.algorithmDict['modelFree']['QLearning'] = qlearning
+        self.algorithmDict['others']['dijkstra'] = dijkstra
 
         self.connectSignalAndSlot()
 
@@ -102,84 +102,84 @@ class Controller(QMainWindow):
         self.map.gridWidget.setObjectName("gridWidget")
         self.gridLayout.addWidget(self.map.gridWidget, 1, 2, 1, 1)
 
-        # 策略面板
-        self.policyLayout = QtWidgets.QGridLayout()
-        self.policyLayout.setObjectName("policyLayout")
+        # 运行控制面板
+        self.runControlLayout = QtWidgets.QGridLayout()
+        self.runControlLayout.setObjectName("runControlLayout")
         self.label_policyTitle = QtWidgets.QLabel(self.centralwidget)
         self.label_policyTitle.setObjectName("label_policyTitle")
-        self.policyLayout.addWidget(self.label_policyTitle, 0, 0, 1, 2, QtCore.Qt.AlignHCenter)
+        self.runControlLayout.addWidget(self.label_policyTitle, 0, 0, 1, 2, QtCore.Qt.AlignHCenter)
 
         self.label_valueColor = QtWidgets.QLabel(self.centralwidget)
         self.label_valueColor.setObjectName("label_valueColor")
         self.label_valueColor.setMargin(1)
-        self.policyLayout.addWidget(self.label_valueColor, 1, 0, 1, 1)
+        self.runControlLayout.addWidget(self.label_valueColor, 1, 0, 1, 1)
         self.checkBox_valueColor = QtWidgets.QCheckBox(self.centralwidget)
         self.checkBox_valueColor.setText("")
         self.checkBox_valueColor.setObjectName("checkBox_valueColor")
         self.checkBox_valueColor.setEnabled(True)
-        self.policyLayout.addWidget(self.checkBox_valueColor, 1, 1, 1, 1)
+        self.runControlLayout.addWidget(self.checkBox_valueColor, 1, 1, 1, 1)
 
         self.label_updateUI = QtWidgets.QLabel(self.centralwidget)
         self.label_updateUI.setObjectName("label_updateUI")
         self.label_updateUI.setMargin(1)
-        self.policyLayout.addWidget(self.label_updateUI, 2, 0, 1, 1)
+        self.runControlLayout.addWidget(self.label_updateUI, 2, 0, 1, 1)
         self.checkBox_updateUI = QtWidgets.QCheckBox(self.centralwidget)
         self.checkBox_updateUI.setText("")
         self.checkBox_updateUI.setChecked(True)
         self.checkBox_updateUI.setObjectName("checkBox_updateUI")
         self.checkBox_updateUI.setEnabled(True)
-        self.policyLayout.addWidget(self.checkBox_updateUI, 2, 1, 1, 1)
+        self.runControlLayout.addWidget(self.checkBox_updateUI, 2, 1, 1, 1)
 
         self.label_maxReward = QtWidgets.QLabel(self.centralwidget)
         self.label_maxReward.setObjectName("label_maxReward")
-        self.policyLayout.addWidget(self.label_maxReward, 3, 0, 1, 1)
+        self.runControlLayout.addWidget(self.label_maxReward, 3, 0, 1, 1)
         self.spinBox_maxReward = QtWidgets.QDoubleSpinBox(self.centralwidget)
         self.spinBox_maxReward.setObjectName("spinBox_maxReward")
         self.spinBox_maxReward.setMinimum(0)
         self.spinBox_maxReward.setMaximum(1000)
         self.spinBox_maxReward.setValue(5.00)
-        self.policyLayout.addWidget(self.spinBox_maxReward, 3, 1, 1, 1)
+        self.runControlLayout.addWidget(self.spinBox_maxReward, 3, 1, 1, 1)
 
         self.label_timeStep = QtWidgets.QLabel(self.centralwidget)
         self.label_timeStep.setObjectName("label_timeStep")
         self.label_timeStep.setMargin(1)
-        self.policyLayout.addWidget(self.label_timeStep, 4, 0, 1, 1)
+        self.runControlLayout.addWidget(self.label_timeStep, 4, 0, 1, 1)
         self.spinBox_timeStep = QtWidgets.QDoubleSpinBox(self.centralwidget)
         self.spinBox_timeStep.setMinimum(0.0)
         self.spinBox_timeStep.setMaximum(10)
         self.spinBox_timeStep.setValue(0.1)
         self.spinBox_timeStep.setDecimals(2)
         self.spinBox_timeStep.setSingleStep(0.01)
-        self.policyLayout.addWidget(self.spinBox_timeStep, 4, 1, 1, 1)
+        self.runControlLayout.addWidget(self.spinBox_timeStep, 4, 1, 1, 1)
 
         self.label_UIStep = QtWidgets.QLabel(self.centralwidget)
         self.label_UIStep.setObjectName("label_UIStep")
         self.label_UIStep.setMargin(1)
-        self.policyLayout.addWidget(self.label_UIStep, 5, 0, 1, 1)
+        self.runControlLayout.addWidget(self.label_UIStep, 5, 0, 1, 1)
         self.spinBox_UIStep = QtWidgets.QSpinBox(self.centralwidget)
         self.spinBox_UIStep.setMinimum(1)
         self.spinBox_UIStep.setMaximum(1000000)
         self.spinBox_UIStep.setValue(10)
-        self.policyLayout.addWidget(self.spinBox_UIStep, 5, 1, 1, 1)
+        self.runControlLayout.addWidget(self.spinBox_UIStep, 5, 1, 1, 1)
 
         spacerItem4 = QtWidgets.QSpacerItem(20, 20, QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
-        self.policyLayout.addItem(spacerItem4)
+        self.runControlLayout.addItem(spacerItem4)
 
         self.line_6 = QtWidgets.QFrame(self.centralwidget)
         self.line_6.setFrameShape(QtWidgets.QFrame.HLine)
         self.line_6.setFrameShadow(QtWidgets.QFrame.Sunken)
         self.line_6.setMinimumWidth(150)
-        self.policyLayout.addWidget(self.line_6, 6, 0, 1, 2)
+        self.runControlLayout.addWidget(self.line_6, 6, 0, 1, 2)
 
         # 这个policyControlLayout将被替换为不同策略的控制布局
-        self.policyControlLayout = QtWidgets.QGridLayout()                   
-        self.policyControlLayout.setObjectName("policyControlLayout")
-        self.policyLayout.addLayout(self.policyControlLayout, 7, 0, 1, 2)
+        self.algorithmControlLayout = QtWidgets.QGridLayout()                   
+        self.algorithmControlLayout.setObjectName("algorithmControlLayout")
+        self.runControlLayout.addLayout(self.algorithmControlLayout, 7, 0, 1, 2)
 
         self.policySpacerItem = QtWidgets.QSpacerItem(20, 20, QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Expanding)
-        self.policyLayout.addItem(self.policySpacerItem)
+        self.runControlLayout.addItem(self.policySpacerItem)
 
-        self.gridLayout.addLayout(self.policyLayout,1, 4, 1, 1)
+        self.gridLayout.addLayout(self.runControlLayout,1, 4, 1, 1)
 
         # 方格设置面板
         self.settingLayout = QtWidgets.QVBoxLayout()
@@ -477,15 +477,15 @@ class Controller(QMainWindow):
         self.spinBox_timeStep.valueChanged.connect(lambda:self.setTimeStep(float(self.spinBox_timeStep.value())))
         self.spinBox_UIStep.valueChanged.connect(lambda:self.setUIStep(int(self.spinBox_UIStep.value())))
         
-        self.action_policy_iteration.triggered.connect(lambda: self.loadPolicy(self.policyDict['modelBased']['policyIteration']))
-        self.action_value_iteration.triggered.connect(lambda: self.loadPolicy(self.policyDict['modelBased']['valueIteration']))
-        self.action_mc_policy_iteration.triggered.connect(lambda: self.loadPolicy(self.policyDict['modelFree']['mcPolicyIteration']))
-        self.action_MCES.triggered.connect(lambda: self.loadPolicy(self.policyDict['modelFree']['MCES']))
-        self.action_dijkstra.triggered.connect(lambda: self.loadPolicy(self.policyDict['others']['dijkstra']))
-        self.action_sarsa.triggered.connect(lambda: self.loadPolicy(self.policyDict['modelFree']['Sarsa']))
-        self.action_dyna_q_prior.triggered.connect(lambda: self.loadPolicy(self.policyDict['modelFree']['DynaQPrior']))
-        self.action_dyna_q.triggered.connect(lambda: self.loadPolicy(self.policyDict['modelFree']['DynaQ']))
-        self.action_q_learning.triggered.connect(lambda: self.loadPolicy(self.policyDict['modelFree']['QLearning']))
+        self.action_policy_iteration.triggered.connect(lambda: self.loadAlgorithm(self.algorithmDict['modelBased']['policyIteration']))
+        self.action_value_iteration.triggered.connect(lambda: self.loadAlgorithm(self.algorithmDict['modelBased']['valueIteration']))
+        self.action_mc_policy_iteration.triggered.connect(lambda: self.loadAlgorithm(self.algorithmDict['modelFree']['mcPolicyIteration']))
+        self.action_MCES.triggered.connect(lambda: self.loadAlgorithm(self.algorithmDict['modelFree']['MCES']))
+        self.action_dijkstra.triggered.connect(lambda: self.loadAlgorithm(self.algorithmDict['others']['dijkstra']))
+        self.action_sarsa.triggered.connect(lambda: self.loadAlgorithm(self.algorithmDict['modelFree']['Sarsa']))
+        self.action_dyna_q_prior.triggered.connect(lambda: self.loadAlgorithm(self.algorithmDict['modelFree']['DynaQPrior']))
+        self.action_dyna_q.triggered.connect(lambda: self.loadAlgorithm(self.algorithmDict['modelFree']['DynaQ']))
+        self.action_q_learning.triggered.connect(lambda: self.loadAlgorithm(self.algorithmDict['modelFree']['QLearning']))
 
         self.action_line_chart.triggered.connect(self.figureGenerator.show)
 
@@ -588,8 +588,8 @@ class Controller(QMainWindow):
 
     def loadMap(self,filePath):
         # 结束可能正在执行的自动control任务
-        if self.policySelected != None:
-            self.policySelected.waitAutoExecEnd()
+        if self.algorithmSelected != None:
+            self.algorithmSelected.waitAutoExecEnd()
         # 加载新地图
         status = self.mapEditor.file.loadMap(filePath,self.mapEditor.map)
         if status != '加载成功':
@@ -599,6 +599,7 @@ class Controller(QMainWindow):
             self.map.path = self.mapEditor.file.filePath
             self.map.isVisible = True
             self.loadMapDialog.close()
+            self.map.gridWidget.cubeSelected = None
             self.map.gridWidget.update()
             self.updateGridWithColor()
             self.refreshPenList()
@@ -623,22 +624,33 @@ class Controller(QMainWindow):
         self.setWindowTitle('Corss The Wall - ' + self.map.name)
         self.gridLayout.addWidget(self.map.gridWidget, 1, 2, 1, 1)
         self.refreshPenList()
+
+        # 如果地图没有起点或终点，移除algorithm控制面板
+        if self.map.startCubeList == [] or self.map.endCubeList == []:
+            try:                                                        
+                self.runControlLayout.removeItem(self.algorithmSelected.controlLayout())   # 解除管理
+                self.algorithmSelected.controlLayoutRemoved()                              # 旧策略控制面板移除处理
+            except Exception:
+                pass
         
-    def loadPolicy(self,policy):
+    def loadAlgorithm(self,algorithm):
         if self.map.isVisible:
             self.policyReloadSignal.emit()
 
-            # 移除原先的policy控制面板
+            # 移除原先的algorithm控制面板
             try:                                                        
-                self.policyLayout.removeItem(self.policySelected.controlLayout())   # policyLayout解除管理
-                self.policySelected.controlLayoutRemoved()                          # 旧策略控制面板移除处理
+                self.runControlLayout.removeItem(self.algorithmSelected.controlLayout())   # 解除管理
+                self.algorithmSelected.controlLayoutRemoved()                              # 旧策略控制面板移除处理
             except Exception:
                 pass
-
-            # 嵌入新policy面板
-            self.policyControlLayout = policy.controlLayout()               
-            self.policyLayout.addLayout(self.policyControlLayout, 7, 0, 1, 2)
-            policy.controlLayoutInit()                                              # 新策略面板初始化处理
-            self.policySelected = policy
+            
+            if self.map.startCubeList == [] or self.map.endCubeList == []:
+                reply = QMessageBox.information(self,"缺失关键状态","缺失起点或终点，禁止使用策略面板！",QMessageBox.Yes)
+            else:
+                # 嵌入新algorithm面板
+                self.algorithmControlLayout = algorithm.controlLayout()               
+                self.runControlLayout.addLayout(self.algorithmControlLayout, 7, 0, 1, 2)
+                algorithm.controlLayoutInit()                                           # 新策略面板初始化处理
+                self.algorithmSelected = algorithm
         else:
             reply = QMessageBox.information(self,"未选择地图！","打开地图前，禁止使用策略面板！",QMessageBox.Yes)

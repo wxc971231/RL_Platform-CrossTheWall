@@ -1,6 +1,6 @@
 from PyQt5 import QtCore, QtWidgets
 from core.Algorithm.RL import BaseModelFreePolicy
-from core.Util.Function import greedyChoise,getActionByEpsilonGreedy
+from core.Util.Function import greedyChoise,getActionByEpsilonGreedy,randomChoice
 from core.Util import MergeablePriorityQueue
 import time
 
@@ -135,7 +135,6 @@ class DynaQPrior(BaseModelFreePolicy):
         
         # 依价值变化调整S前导状态的优先级（注意，按这里的实现方式，alpha=1时退化到Q-learning）
         P = abs(R + self.gamma*S_.Q[A_]-S.Q[A])
-        print()
         self.updatePriority(S,P)
 
         # 更新策略pi(Q-learning中仅用于UI显示)
@@ -150,7 +149,7 @@ class DynaQPrior(BaseModelFreePolicy):
         rewards = []
         
         # 初始状态s设为起点
-        S = self.map.startCube
+        S = randomChoice(self.map.startCubeList)
         S.agentLocated = True
                 
         while self.autoExec:
@@ -158,8 +157,9 @@ class DynaQPrior(BaseModelFreePolicy):
             A = getActionByEpsilonGreedy(self.epsilon,S)
 
             # 执行A，观测到R和S_
-            S_ = S.nextCubeDict[A]
-            R = S.reward - (S != self.map.endCube)*self.map.disCostDiscount*S.distance(S_)
+            nextCubeList = [s_ for s_,p in S.nextCubeDict[A]]
+            S_ = randomChoice(nextCubeList)
+            R = S.reward - self.map.disCostDiscount*S.distance(S_)
             rewards.append(R)
             length += S.distance(S_)
 
@@ -189,7 +189,7 @@ class DynaQPrior(BaseModelFreePolicy):
                     self.map.gridWidget.update()
                 
             # 轨迹终止条件
-            if S == self.map.endCube:
+            if S in self.map.endCubeList:
                 S.agentLocated = False
                 break
             

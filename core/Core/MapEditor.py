@@ -1,6 +1,7 @@
 # 核心组件 —— 地图编辑器：实现地图的图形化编辑、新建、保存等功能
 import operator
 import os
+import copy
 from PyQt5 import QtCore, QtWidgets, QtGui
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
@@ -148,21 +149,17 @@ class MapEditor(QMainWindow):
         self.label_penName = QtWidgets.QLabel(self.centralwidget)
         self.label_penName.setObjectName("label_penName")
         self.penSettingLayout.addWidget(self.label_penName, 2, 0, 1, 1)
-        self.label_penColor = QtWidgets.QLabel(self.centralwidget)
-        self.label_penColor.setObjectName("label_penColor")
-        self.penSettingLayout.addWidget(self.label_penColor, 3, 0, 1, 1)
-        self.pbt_color = QtWidgets.QPushButton(self.centralwidget)
-        self.pbt_color.setObjectName("pbt_color")
-        self.pbt_color.setStyleSheet('QPushButton{background:#C8C8C8;}')
-        self.penSettingLayout.addWidget(self.pbt_color, 3, 1, 1, 1)
-        self.settingLayout.addLayout(self.penSettingLayout)
         self.checkBox_penDrawing = QtWidgets.QCheckBox(self.centralwidget)
         self.checkBox_penDrawing.setText("")
         self.checkBox_penDrawing.setObjectName("checkBox_penDrawing")
-        self.penSettingLayout.addWidget(self.checkBox_penDrawing, 4, 1, 1, 1)
+        self.penSettingLayout.addWidget(self.checkBox_penDrawing, 3, 1, 1, 1)
         self.label_penDrawing = QtWidgets.QLabel(self.centralwidget)
         self.label_penDrawing.setObjectName("label_penDrawing")
-        self.penSettingLayout.addWidget(self.label_penDrawing, 4, 0, 1, 1)
+        self.penSettingLayout.addWidget(self.label_penDrawing, 3, 0, 1, 1)
+        self.pbt_editPen = QtWidgets.QPushButton(self.centralwidget)
+        self.pbt_editPen.setObjectName("pbt_editPen")
+        self.penSettingLayout.addWidget(self.pbt_editPen, 4, 0, 1, 2)
+        self.settingLayout.addLayout(self.penSettingLayout)
         self.pbt_deletePen = QtWidgets.QPushButton(self.centralwidget)
         self.pbt_deletePen.setObjectName("pbt_deletePen")
         self.penSettingLayout.addWidget(self.pbt_deletePen, 5, 0, 1, 2)
@@ -253,28 +250,30 @@ class MapEditor(QMainWindow):
 
         # 信号与槽函数连接
         self.action_add_map.triggered.connect(self.sizeDialog.show)             # 新地图，打开尺寸编辑Dialog
-        self.action_load_map.triggered.connect(self.loadMapDialog.show)        # 加载地图
-        self.pbt_saveAsPen.clicked.connect(self.penDialog.show)                 # 方格属性存为画笔
+        self.action_load_map.triggered.connect(self.loadMapDialog.show)         # 加载地图
+        self.pbt_saveAsPen.clicked.connect(self.penDialog.showWidgetByCube)     # 方格属性存为画笔
         self.action_save_map.triggered.connect(self.updateMap)                  # 更新地图
         self.action_save_as.triggered.connect(self.showSaveFileDialog)          # 地图另存为
         self.action_generator_CW.triggered.connect(lambda: self.loadGenerator(self.generatorDict['Crossing Wall']))
-
-        self.checkBox_cubeStart.clicked.connect(self.check_cubeStart)           # 方块设为起点
-        self.checkBox_cubeEnd.clicked.connect(self.check_cubeEnd)               # 方块设为终点
+        self.checkBox_cubeStart.clicked.connect(self.checkBoxCubeStartClicked)  # 方块设为起点
+        self.checkBox_cubeEnd.clicked.connect(self.checkBoxCubeEndClicked)      # 方块设为终点
+        self.checkBox_cubePass.clicked.connect(self.checkBoxCubePassClicked)    # 设置能否通行
         self.checkBox_showGridWithColor.clicked.connect(self.updateGridWithColor) # 分色显示
         self.checkBox_penDrawing.toggled.connect(self.setEditorMode)            # 开始绘制
         self.comboBox_penName.currentIndexChanged.connect(self.selectPen)       # 选择画笔
         self.pbt_editCube.clicked.connect(self.updateCube)                      # 更新方格属性
-        self.pbt_color.clicked.connect(self.setPenColor)                        # 选择画笔颜色
+        self.pbt_editPen.clicked.connect(self.showPenDialog)                    # 编辑画笔
         self.pbt_deletePen.clicked.connect(self.deletPen)                       # 删除画笔
-        self.map.gridWidget.cubeUpdateSignal.connect(lambda: self.setMapSaved(False))   # 用画笔绘制方格时的更新信号
+        self.map.gridWidget.cubeUpdateSignal.connect(self.setMapSavedIfFalse)   # 用画笔绘制方格时的更新信号
         self.spinBox_disCostDiscount.valueChanged.connect(self.setDisCostDiscount)
         self.pbt_finish.clicked.connect(self.editFinish)
         self.sizeDialog.sizeSignal.connect(self.newMap)
         self.saveFileDialog.saveMapSignal.connect(self.saveMap)
         self.loadMapDialog.loadMapSignal.connect(self.loadMap)
-        self.penDialog.penSignal.connect(self.newPen)
+        self.penDialog.newPenSignal.connect(self.newPen)
+        self.penDialog.editPenSignal.connect(self.editPen)
         self.map.gridWidget.cubeSelectedSignal.connect(self.showCubeSetting)
+        self.map.gridWidget.cubeSelectedSignal.connect(self.showPenSetting)
 
     def retranslateUi(self):
         _translate = QtCore.QCoreApplication.translate
@@ -299,82 +298,53 @@ class MapEditor(QMainWindow):
         self.action_save_as.setText(_translate("EditorWindow", "另存为"))
         self.label_globalTitle.setText(_translate("EditorWindow", "全局设定"))
         self.label_disCostDiscount.setText(_translate("EditorWindow", "路程折扣"))
-        self.label_penColor.setText(_translate("EditorWindow", "画笔颜色"))
+        self.pbt_editPen.setText(_translate("EditorWindow", "编辑画笔"))
         self.label_genTitle.setText(_translate("self", "地图生成器"))
         self.menuGenerator.setTitle(_translate("self", "Generator"))
         self.action_generator_CW.setText(_translate("self", "Crossing Wall"))
 
-    # 设置方格编辑面板使能/失能
-    def setCubeSettingLayoutEnabled(self,enabled):
-        if enabled:
-            self.spinBox_cubeReward.setEnabled(True)
-            self.checkBox_cubeEnd.setEnabled(True)
-            self.checkBox_cubeStart.setEnabled(True)
-            self.checkBox_cubePass.setEnabled(True)
-            self.pbt_editCube.setEnabled(True)
-        else:
-            self.spinBox_cubeReward.setEnabled(False)
-            self.checkBox_cubeEnd.setEnabled(False)
-            self.checkBox_cubeStart.setEnabled(False)
-            self.checkBox_cubePass.setEnabled(False)
-            self.pbt_editCube.setEnabled(False)
+    # UI显示-----------------------------------------------------------------------
+    def checkBoxCubeStartClicked(self):
+        clicked = self.checkBox_cubeStart.isChecked()
+        self.checkBox_cubeEnd.setEnabled(not clicked)
+        if clicked:
+            self.checkBox_cubePass.setChecked(True)
     
-    # 设置画笔编辑面板使能/失能
-    def setPenSettingLayoutEnabled(self,enabled):
-        if enabled:
-            self.comboBox_penName.setEnabled(True)
-            self.checkBox_penDrawing.setEnabled(True)
-            self.pbt_deletePen.setEnabled(True)
-        else:
-            self.comboBox_penName.setEnabled(False)
-            self.checkBox_penDrawing.setEnabled(False)
-            self.pbt_deletePen.setEnabled(False)
+    def checkBoxCubeEndClicked(self):
+        clicked = self.checkBox_cubeEnd.isChecked()
+        self.checkBox_cubeStart.setEnabled(not clicked)
+        if clicked:
+            self.checkBox_cubePass.setChecked(True)
 
-    # 删除画笔
-    def deletPen(self):
-        penName = self.comboBox_penName.currentText()
-        if penName != '':
-            del self.map.penDict[penName]
-        self.refreshPenComboBox()
-        self.setMapSaved(False)
+    def checkBoxCubePassClicked(self):
+        clicked = self.checkBox_cubePass.isChecked()
+        self.checkBox_cubeStart.setEnabled(clicked)
+        self.checkBox_cubeEnd.setEnabled(clicked)
+        if not clicked:
+            self.checkBox_cubeStart.setChecked(False)
+            self.checkBox_cubeEnd.setChecked(False)
 
-        # 此画笔绘制的所有方格类型改为 'modified'
-        for i in range(self.map.gridWidget.row):
-            for j in range(self.map.gridWidget.colum):
-                if self.map.gridWidget.cubes[i][j].penName == penName:
-                    self.map.gridWidget.cubes[i][j].penName = 'modified'
-        self.map.gridWidget.update()
-
-    # 新建画笔
-    def newPen(self,name,color):
-        slide = [0,0,0,0]
-        reward = float(self.spinBox_cubeReward.value())
-        isPassable = self.checkBox_cubePass.isChecked()
-
-        pen = Pen(color,name,slide,isPassable,reward)
-        self.map.penDict[pen.name] = pen
-        # 刷新ui
-        self.refreshPenComboBox()
-        self.setMapSaved(False)       
-
-    # 刷新画笔列表
-    def refreshPenComboBox(self):
-        self.comboBox_penName.clear()
-        for penName in self.map.penDict:
-            self.comboBox_penName.addItem(penName)
-        self.comboBox_penName.setCurrentText('default')
-
+    # 设置路程成本折扣
     def setDisCostDiscount(self):
         self.map.disCostDiscount = float(self.spinBox_disCostDiscount.value())
         self.setMapSaved(False)
+ 
+    # 设置方格编辑面板使能/失能
+    def setCubeSettingLayoutEnabled(self,enabled):
+        self.spinBox_cubeReward.setEnabled(enabled)
+        self.checkBox_cubeEnd.setEnabled(enabled)
+        self.checkBox_cubeStart.setEnabled(enabled)
+        self.checkBox_cubePass.setEnabled(enabled)
+        self.pbt_editCube.setEnabled(enabled)
+        self.pbt_saveAsPen.setEnabled(enabled)
 
-    def setMapSaved(self,saved):
-        self.map.saved = saved
-        if not saved:
-            self.setWindowTitle('MapEditor - ' + self.map.name + '*')
-        else:
-            self.setWindowTitle('MapEditor - ' + self.map.name)
+    # 设置画笔编辑面板使能/失能
+    def setPenSettingLayoutEnabled(self,enabled):
+        self.comboBox_penName.setEnabled(enabled)
+        self.checkBox_penDrawing.setEnabled(enabled)
+        self.pbt_deletePen.setEnabled(enabled)
 
+    # 设置编辑器模式：选择模式 or 画笔模式
     def setEditorMode(self):
         # 进入画笔模式
         if self.checkBox_penDrawing.isChecked():
@@ -383,40 +353,155 @@ class MapEditor(QMainWindow):
             self.map.gridWidget.isDrawingMode = True        
             
             # 若现有选中处于编辑状态的的块，清除标记
-            if(self.map.gridWidget.cubeSelected != None):
+            if self.map.gridWidget.cubeSelected != None:
                 self.map.gridWidget.cubeSelected.selected = False
                 self.map.gridWidget.update()
         else:
             self.map.gridWidget.isDrawingMode = False
 
-    def check_cubeStart(self):
-        if self.checkBox_cubeStart.isChecked():
-            self.checkBox_cubeEnd.setEnabled(False)
-        elif self.map.endCube == None:
-            self.checkBox_cubeEnd.setEnabled(True)
+    # 是否分色显示
+    def updateGridWithColor(self):
+        self.map.gridWidget.showWithColor = self.checkBox_showGridWithColor.isChecked()
+        self.map.gridWidget.update()
 
-    def check_cubeEnd(self):
-        if self.checkBox_cubeEnd.isChecked():
-            self.checkBox_cubeStart.setEnabled(False)
-        elif self.map.startCube == None:
-            self.checkBox_cubeStart.setEnabled(True)
+    # 在画笔设定面板显示选中方格所属画笔的信息
+    def showPenSetting(self):
+        cube = self.map.gridWidget.cubeSelected
+        if cube != None:
+            self.comboBox_penName.setCurrentText(cube.penName)
+            self.selectPen()
 
-    def setPenColor(self):
-        col = QColorDialog.getColor() 
-        if col.isValid(): 
-            self.pbt_color.setStyleSheet('QPushButton{background:%s;}'%col.name())
-            self.penSelected.color = col.name()
-            self.map.gridWidget.update()
+    # 在方格设定面板显示选中方格的信息
+    def showCubeSetting(self):
+        cube = self.map.gridWidget.cubeSelected
+        if cube != None:
+            self.label_cubeTitle.setText('方格信息')
+            self.spinBox_cubeReward.setValue(cube.reward)
+            self.checkBox_cubeStart.setChecked(cube.isStart)
+            self.checkBox_cubeEnd.setChecked(cube.isEnd)
+            self.checkBox_cubePass.setChecked(cube.isPassable)
+            
+            # 如果是墙，禁止编辑
+            if not cube.isPassable:
+                self.setCubeSettingLayoutEnabled(False)
+                self.checkBox_cubePass.setEnabled(True)
+                self.pbt_saveAsPen.setEnabled(True)
+            else:
+                self.setCubeSettingLayoutEnabled(True)
+                if self.checkBox_cubeStart.isChecked():
+                    self.checkBox_cubeEnd.setEnabled(False)
+                elif self.checkBox_cubeEnd.isChecked():
+                    self.checkBox_cubeStart.setEnabled(False)
+
+            self.statusBar().showMessage("方格({},{})：type = {}; passable = {}".format(cube.row,cube.colum,cube.penName,str(cube.isPassable)))
+        else:
+            self.statusBar().showMessage("")
+            self.setCubeSettingLayoutEnabled(False)
+
+    # 画笔对象增删查改----------------------------------------------------------------------
+    # 删除画笔
+    def deletPen(self):
+        reply = QtWidgets.QMessageBox.information(self,"注意","删除画笔无法恢复，所有此画笔绘制的方格类型将变为'modified'",QtWidgets.QMessageBox.Yes,QtWidgets.QMessageBox.No)
+        if reply == QtWidgets.QMessageBox.Yes:
+            # 此画笔绘制的所有方格类型改为 'modified'
+            penName = self.comboBox_penName.currentText()
+            for i in range(self.map.gridWidget.row):
+                for j in range(self.map.gridWidget.colum):
+                    if self.map.gridWidget.cubes[i][j].penName == penName:
+                        self.map.gridWidget.cubes[i][j].penName = 'modified'
+            del self.map.penDict[penName]
         
+            self.refreshPenComboBox()
+            self.setMapSaved(False)
+            self.map.gridWidget.update()
+
+    # 新建画笔
+    def newPen(self,name,color,reward,attribute):
+        slide = [0,0,0,0]
+        isPassable = attribute != '墙壁'
+        isStart = attribute == '起点'
+        isEnd = attribute == '终点'
+
+        pen = Pen(color,name,slide,isPassable,isStart,isEnd,reward)
+        self.map.penDict[pen.name] = pen
+        # 刷新ui
+        self.refreshPenComboBox()
+        self.setMapSaved(False)       
+
+    # 编辑画笔
+    def editPen(self,name,color,reward,attribute):
+        slide = [0,0,0,0]
+        isPassable = attribute != '墙壁'
+        isStart = attribute == '起点'
+        isEnd = attribute == '终点'
+
+        self.penSelected.updatePen(color,name,slide,isPassable,isStart,isEnd,reward)
+        if self.penSelected != self.lastPen:
+            for i in range(self.map.gridWidget.row):
+                for j in range(self.map.gridWidget.colum):
+                    if self.map.gridWidget.cubes[i][j].penName == self.lastPen.name:
+                        self.map.gridWidget.cubes[i][j].updateWithPen(self.penSelected)
+            
+            self.map.penDict[self.penSelected.name] = self.map.penDict.pop(self.lastPen.name)
+            self.refreshPenComboBox()
+            self.setMapSaved(False)
+
+    # 刷新画笔列表
+    def refreshPenComboBox(self):
+        self.comboBox_penName.clear()
+        for penName in self.map.penDict:
+            self.comboBox_penName.addItem(penName)
+        self.comboBox_penName.setCurrentText('default')
+
+    # 选中画笔
+    def selectPen(self):
+        penName = self.comboBox_penName.currentText()
+        if penName != '':
+            self.checkBox_penDrawing.setStyleSheet('QCheckBox{background:%s;}'%self.map.penDict[penName].color)
+            self.penSelected = self.map.penDict[penName]
+            self.map.gridWidget.penSelected = self.penSelected
+
+            self.checkBox_penDrawing.setEnabled(True)
+            self.pbt_deletePen.setEnabled(False)
+            self.pbt_editPen.setEnabled(False)
+            if penName == 'modified':
+                self.checkBox_penDrawing.setChecked(False)
+                self.checkBox_penDrawing.setEnabled(False)
+                self.statusBar().showMessage("modified是手动编辑修改后可通行方格的统一类型，不可用于绘制")
+            elif penName == 'wall':
+                self.statusBar().showMessage("wall画笔用于绘制不可通行方格")
+            elif penName == 'default':
+                self.statusBar().showMessage("default画笔用于绘制无奖励的默认方格")
+            else:
+                self.statusBar().showMessage("自定义画笔"+penName)
+                self.pbt_deletePen.setEnabled(True)
+                self.pbt_editPen.setEnabled(True)
+
+    # 地图对象增删查改----------------------------------------------------------------------
+    def newMap(self,row,colum):
+        self.map.gridWidget.initGrid(row,colum)
+        self.map.startCubeList = []
+        self.map.endCubeList = []
+        self.map.isVisible = True
+        self.map.name = 'new'
+        self.map.path = ''
         self.setMapSaved(False)
 
-    def showSaveFileDialog(self):
-        if not self.map.isVisible:
-            reply = QMessageBox.information(self,"错误！","未创建或打开地图，禁止保存！",QMessageBox.Yes)
-            return 
-        self.saveFileDialog.showWidget(self.map.name)
+    def loadMap(self,filePath):
+        status = self.file.loadMap(filePath,self.map)
+        if status != '加载成功':
+            self.loadMapDialog.textBrowser.setText(status)
+        else:
+            self.map.name = self.file.fileName
+            self.map.path = self.file.filePath
+            self.map.isVisible = True
+            self.setWindowTitle('MapEditor - '+self.map.name)
+            self.loadMapDialog.close()
+            self.refreshPenComboBox()
+            self.map.gridWidget.update()
+            self.updateGridWithColor()
+            self.map.reloadSignal.emit()
 
-    # 更新地图
     def updateMap(self):
         if self.map.path == '':         # 没存过，弹出保存界面
             self.showSaveFileDialog()
@@ -434,125 +519,27 @@ class MapEditor(QMainWindow):
         else:
             QMessageBox.information(self,"错误！","未创建或打开地图，禁止保存！",QMessageBox.Yes)
 
-    def loadMap(self,filePath):
-        status = self.file.loadMap(filePath,self.map)
-        if status != '加载成功':
-            self.loadMapDialog.textBrowser.setText(status)
-        else:
-            self.map.name = self.file.fileName
-            self.map.path = self.file.filePath
-            self.map.isVisible = True
-            self.loadMapDialog.close()
-            self.refreshPenComboBox()
-            self.map.gridWidget.update()
-            self.updateGridWithColor()
-            self.map.reloadSignal.emit()
-            
-    def newMap(self,row,colum):
-        self.map.gridWidget.gridInit(row,colum)
-        self.map.startCube = None
-        self.map.endCube = None
-        self.map.isVisible = True
-        self.map.name = 'new'
-        self.map.path = ''
-        self.setMapSaved(False)
-
+    # 编辑某个方格
     def updateCube(self):
-        oldCube = self.map.gridWidget.cubeSelected.copy()
         cube = self.map.gridWidget.cubeSelected
         slide = [0,0,0,0]
         reward = float(self.spinBox_cubeReward.value())
         isPassable = self.checkBox_cubePass.isChecked()
         isStart = self.checkBox_cubeStart.isChecked()
         isEnd = self.checkBox_cubeEnd.isChecked()
-        cube.update(reward,slide,isPassable,isStart,isEnd)
-
-        if self.map.startCube == None and cube.isStart:
-            self.map.startCube = cube
-        elif self.map.startCube == cube and not cube.isStart:
-             self.map.startCube = None
-
-        if self.map.endCube == None and cube.isEnd:
-            self.map.endCube = cube
-        elif self.map.endCube == cube and not cube.isEnd:
-             self.map.endCube = None
+        changed = cube.update(reward,slide,isPassable,isStart,isEnd)
 
         # 如果修改了关键参数，统一设置为modified类型，使用浅绿色显示
-        if not operator.eq(cube.slide,oldCube.slide) or cube.reward != oldCube.reward:
+        if changed:
             cube.penName = 'modified'
-
-        self.map.gridWidget.update()
-        self.showCubeSetting()
-        self.setMapSaved(False)
-
-    def updateGridWithColor(self):
-        if self.checkBox_showGridWithColor.isChecked():
-            self.map.gridWidget.showWithColor = True
-        else:
-            self.map.gridWidget.showWithColor = False
-        self.map.gridWidget.update()
-
-    # 在方格设定面板显示选中方格的信息
-    def showCubeSetting(self):
-        cube = self.map.gridWidget.cubeSelected
-        if cube != None:
-            self.label_cubeTitle.setText('方格信息')
-            self.spinBox_cubeReward.setValue(cube.reward)
-            self.checkBox_cubeStart.setChecked(cube.isStart)
-            self.checkBox_cubeEnd.setChecked(cube.isEnd)
-            self.checkBox_cubePass.setChecked(cube.isPassable)
-            
-            # 如果是墙，禁止编辑
-            if not cube.isPassable:
-                self.setCubeSettingLayoutEnabled(False)
-                self.checkBox_cubePass.setEnabled(True)
-                self.pbt_editCube.setEnabled(True)
-            else:
-                self.setCubeSettingLayoutEnabled(True)
-
-                # 保证地图中最多只能存在一个起点和一个终点
-                if (self.map.endCube != None and self.map.endCube != cube) or self.map.startCube == cube:
-                    self.checkBox_cubeEnd.setEnabled(False)
-                else:
-                    self.checkBox_cubeEnd.setEnabled(True)
-
-                if (self.map.startCube != None and self.map.startCube != cube) or self.map.endCube == cube:
-                    self.checkBox_cubeStart.setEnabled(False)
-                else:
-                    self.checkBox_cubeStart.setEnabled(True)
-
-            self.statusBar().showMessage("方格({},{})：type = {}; passable = {}".format(cube.row,cube.colum,cube.penName,str(cube.isPassable)))
-        else:
-            self.statusBar().showMessage("")
-            self.setCubeSettingLayoutEnabled(False)
-
-    def selectPen(self):
-        penName = self.comboBox_penName.currentText()
-        if penName != '':
-            self.pbt_color.setStyleSheet('QPushButton{background:%s;}'%self.map.penDict[penName].color)
-            self.penSelected = self.map.penDict[penName]
-            self.map.gridWidget.penSelected = self.penSelected
-
-            self.checkBox_penDrawing.setEnabled(True)
-            self.pbt_deletePen.setEnabled(False)
-            if penName == 'modified':
-                self.checkBox_penDrawing.setChecked(False)
-                self.checkBox_penDrawing.setEnabled(False)
-                self.statusBar().showMessage("modified是手动编辑修改后可通行方格的统一类型，不可用于绘制")
-            elif penName == 'wall':
-                self.statusBar().showMessage("wall画笔用于绘制不可通行方格，仅增加不可通行属性，其它属性不变")
-            elif penName == 'default':
-                self.statusBar().showMessage("default画笔用于绘制无奖励的默认方格")
-            else:
-                info = self.penSelected.slide.copy()
-                info.append(float(self.penSelected.reward))
-                self.statusBar().showMessage("自定义画笔"+penName+"："+'info = '+str(info))
-                self.pbt_deletePen.setEnabled(True)
-            
-    # 编辑完成转到controller，提示保存
+            self.map.gridWidget.update()
+            self.showCubeSetting()
+            self.setMapSaved(False)
+   
+    # 地图编辑完成，转到controller，提示保存
     def editFinish(self):
         if self.map.isVisible and not self.map.saved:
-            reply = QMessageBox.information(self,                         #使用infomation信息框
+            reply = QMessageBox.information(self,        
                                     "修改未保存！",
                                     "要把改动保存到地图配置文件吗",
                                     QMessageBox.Yes | QMessageBox.No)
@@ -564,14 +551,35 @@ class MapEditor(QMainWindow):
                     self.close()
             else:
                 self.close()
+
+            # 重新缓存相邻方格
+            self.map.gridWidget.reStoreAllNeighborCube()
         else:
             self.close()
+        
+    # 是否需要重新保存到文件
+    def setMapSavedIfFalse(self,saved):
+        if saved == False:
+            self.setMapSaved(False)
 
-        # 重新缓存相邻方格
-        self.map.gridWidget.reStoreAllNeighborCube()
+    def setMapSaved(self,saved):
+        self.map.saved = saved
+        if not saved:
+            self.setWindowTitle('MapEditor - ' + self.map.name + '*')
+        else:
+            self.setWindowTitle('MapEditor - ' + self.map.name)
 
+    # 其他 ------------------------------------------------------------------------------------------
+    def showPenDialog(self):
+        self.lastPen = copy.deepcopy(self.penSelected)  # 先存一个副本，用来分析要不要重新保存文件
+        self.penDialog.showWidgetByPen(self.penSelected)
 
-    # 关闭事件
+    def showSaveFileDialog(self):
+        if not self.map.isVisible:
+            reply = QMessageBox.information(self,"错误！","未创建或打开地图，禁止保存！",QMessageBox.Yes)
+            return 
+        self.saveFileDialog.showWidget(self.map.name)
+
     def closeEvent(self,event):
         self.checkBox_penDrawing.setChecked(False)
         self.map.disCostDiscount = float(self.spinBox_disCostDiscount.value())
@@ -594,10 +602,9 @@ class MapEditor(QMainWindow):
         else:
             self.setWindowTitle('MapEditor')
 
-
     def loadGenerator(self,generator):
         try:                                                        
-            self.generatorLayout.removeItem(generator.controlLayout())   # policyLayout解除管理
+            self.generatorLayout.removeItem(generator.controlLayout())   # 解除管理
         except Exception:
             pass
 

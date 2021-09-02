@@ -1,19 +1,18 @@
 This is the map data file for map editor, do not modify it manually
 
-UI version:v1.0
+UI version:v1.1
 
 Pen para:
-wall,#646464,0.0,False;0,0,0,0
-modified,#d2ffe3,0.0,True;0,0,0,0
-5,#fff7b4,5.0,True;0,0,0,0
-1,#9efff1,1.0,True;0,0,0,0
-default,#C8C8C8,0.0,True;0,0,0,0
+{"name": "wall", "color": "#646464", "reward": 0.0, "isPassable": false, "isStart": false, "isEnd": false, "slide": [0, 0, 0, 0]}
+{"name": "modified", "color": "#d2ffe3", "reward": 0.0, "isPassable": true, "isStart": false, "isEnd": false, "slide": [0, 0, 0, 0]}
+{"name": "1", "color": "#9efff1", "reward": 1.0, "isPassable": true, "isStart": false, "isEnd": false, "slide": [0, 0, 0, 0]}
+{"name": "default", "color": "#C8C8C8", "reward": 0.0, "isPassable": true, "isStart": false, "isEnd": false, "slide": [0, 0, 0, 0]}
+{"name": "end", "color": "#ff6a6a", "reward": 50.0, "isPassable": true, "isStart": false, "isEnd": true, "slide": [0, 0, 0, 0]}
+{"name": "start", "color": "#ffe7e7", "reward": 0.0, "isPassable": true, "isStart": true, "isEnd": false, "slide": [0, 0, 0, 0]}
+{"name": "5", "color": "#fff7b4", "reward": 5.0, "isPassable": true, "isStart": false, "isEnd": false, "slide": [0, 0, 0, 0]}
 
 map para:
-15,20
-7,0
-7,19
-1.0
+{"size": [15, 20], "startCubePosList": [[7, 0], [3, 0], [12, 0]], "endCubePosList": [[3, 19], [7, 19], [12, 19]], "disCostDiscount": 1.0}
 
 Cubes para:
 0,0,0.0,default,True,False,False;0,0,0,0
@@ -23,7 +22,7 @@ Cubes para:
 0,4,0.0,default,True,False,False;0,0,0,0
 0,5,0.0,default,True,False,False;0,0,0,0
 0,6,0.0,default,True,False,False;0,0,0,0
-0,7,0.0,default,False,False,False;0,0,0,0
+0,7,0.0,wall,False,False,False;0,0,0,0
 0,8,0.0,default,True,False,False;0,0,0,0
 0,9,0.0,default,True,False,False;0,0,0,0
 0,10,0.0,default,True,False,False;0,0,0,0
@@ -31,7 +30,7 @@ Cubes para:
 0,12,0.0,default,True,False,False;0,0,0,0
 0,13,0.0,default,True,False,False;0,0,0,0
 0,14,0.0,default,True,False,False;0,0,0,0
-0,15,0.0,default,False,False,False;0,0,0,0
+0,15,0.0,wall,False,False,False;0,0,0,0
 0,16,0.0,default,True,False,False;0,0,0,0
 0,17,0.0,default,True,False,False;0,0,0,0
 0,18,0.0,default,True,False,False;0,0,0,0
@@ -51,7 +50,7 @@ Cubes para:
 1,12,0.0,default,True,False,False;0,0,0,0
 1,13,0.0,default,True,False,False;0,0,0,0
 1,14,0.0,default,True,False,False;0,0,0,0
-1,15,0.0,default,False,False,False;0,0,0,0
+1,15,0.0,wall,False,False,False;0,0,0,0
 1,16,0.0,default,True,False,False;0,0,0,0
 1,17,0.0,default,True,False,False;0,0,0,0
 1,18,0.0,default,True,False,False;0,0,0,0
@@ -63,7 +62,7 @@ Cubes para:
 2,4,0.0,default,True,False,False;0,0,0,0
 2,5,0.0,default,True,False,False;0,0,0,0
 2,6,0.0,default,True,False,False;0,0,0,0
-2,7,0.0,default,False,False,False;0,0,0,0
+2,7,0.0,wall,False,False,False;0,0,0,0
 2,8,0.0,default,True,False,False;0,0,0,0
 2,9,0.0,default,True,False,False;0,0,0,0
 2,10,0.0,default,True,False,False;0,0,0,0
@@ -71,31 +70,31 @@ Cubes para:
 2,12,0.0,default,True,False,False;0,0,0,0
 2,13,0.0,default,True,False,False;0,0,0,0
 2,14,0.0,default,True,False,False;0,0,0,0
-2,15,0.0,default,False,False,False;0,0,0,0
+2,15,0.0,wall,False,False,False;0,0,0,0
 2,16,0.0,default,True,False,False;0,0,0,0
 2,17,0.0,default,True,False,False;0,0,0,0
 2,18,0.0,default,True,False,False;0,0,0,0
 2,19,0.0,default,True,False,False;0,0,0,0
-3,0,0.0,default,True,False,False;0,0,0,0
+3,0,0.0,start,True,True,False;0,0,0,0
 3,1,0.0,default,True,False,False;0,0,0,0
 3,2,0.0,default,True,False,False;0,0,0,0
 3,3,0.0,default,True,False,False;0,0,0,0
 3,4,0.0,default,True,False,False;0,0,0,0
 3,5,0.0,default,True,False,False;0,0,0,0
 3,6,0.0,default,True,False,False;0,0,0,0
-3,7,0.0,default,False,False,False;0,0,0,0
+3,7,0.0,wall,False,False,False;0,0,0,0
 3,8,0.0,default,True,False,False;0,0,0,0
 3,9,0.0,default,True,False,False;0,0,0,0
 3,10,0.0,default,True,False,False;0,0,0,0
-3,11,0.0,default,True,False,False;0,0,0,0
+3,11,0.0,wall,False,False,False;0,0,0,0
 3,12,0.0,default,True,False,False;0,0,0,0
 3,13,0.0,default,True,False,False;0,0,0,0
 3,14,0.0,default,True,False,False;0,0,0,0
-3,15,5.0,5,False,False,False;0,0,0,0
+3,15,0.0,wall,False,False,False;0,0,0,0
 3,16,0.0,default,True,False,False;0,0,0,0
 3,17,0.0,default,True,False,False;0,0,0,0
 3,18,0.0,default,True,False,False;0,0,0,0
-3,19,0.0,default,True,False,False;0,0,0,0
+3,19,50.0,end,True,False,True;0,0,0,0
 4,0,0.0,default,True,False,False;0,0,0,0
 4,1,0.0,default,True,False,False;0,0,0,0
 4,2,0.0,default,True,False,False;0,0,0,0
@@ -103,15 +102,15 @@ Cubes para:
 4,4,0.0,default,True,False,False;0,0,0,0
 4,5,0.0,default,True,False,False;0,0,0,0
 4,6,0.0,default,True,False,False;0,0,0,0
-4,7,0.0,default,False,False,False;0,0,0,0
+4,7,0.0,wall,False,False,False;0,0,0,0
 4,8,0.0,default,True,False,False;0,0,0,0
 4,9,0.0,default,True,False,False;0,0,0,0
 4,10,0.0,default,True,False,False;0,0,0,0
-4,11,0.0,default,True,False,False;0,0,0,0
+4,11,0.0,wall,False,False,False;0,0,0,0
 4,12,0.0,default,True,False,False;0,0,0,0
 4,13,0.0,default,True,False,False;0,0,0,0
 4,14,0.0,default,True,False,False;0,0,0,0
-4,15,0.0,default,False,False,False;0,0,0,0
+4,15,0.0,wall,False,False,False;0,0,0,0
 4,16,0.0,default,True,False,False;0,0,0,0
 4,17,0.0,default,True,False,False;0,0,0,0
 4,18,0.0,default,True,False,False;0,0,0,0
@@ -127,11 +126,11 @@ Cubes para:
 5,8,0.0,default,True,False,False;0,0,0,0
 5,9,0.0,default,True,False,False;0,0,0,0
 5,10,0.0,default,True,False,False;0,0,0,0
-5,11,0.0,default,True,False,False;0,0,0,0
+5,11,0.0,wall,False,False,False;0,0,0,0
 5,12,0.0,default,True,False,False;0,0,0,0
 5,13,0.0,default,True,False,False;0,0,0,0
 5,14,0.0,default,True,False,False;0,0,0,0
-5,15,0.0,default,False,False,False;0,0,0,0
+5,15,0.0,wall,False,False,False;0,0,0,0
 5,16,0.0,default,True,False,False;0,0,0,0
 5,17,0.0,default,True,False,False;0,0,0,0
 5,18,0.0,default,True,False,False;0,0,0,0
@@ -143,39 +142,39 @@ Cubes para:
 6,4,0.0,default,True,False,False;0,0,0,0
 6,5,0.0,default,True,False,False;0,0,0,0
 6,6,0.0,default,True,False,False;0,0,0,0
-6,7,0.0,default,False,False,False;0,0,0,0
+6,7,0.0,wall,False,False,False;0,0,0,0
 6,8,0.0,default,True,False,False;0,0,0,0
 6,9,0.0,default,True,False,False;0,0,0,0
 6,10,0.0,default,True,False,False;0,0,0,0
-6,11,0.0,default,True,False,False;0,0,0,0
+6,11,0.0,wall,False,False,False;0,0,0,0
 6,12,0.0,default,True,False,False;0,0,0,0
 6,13,0.0,default,True,False,False;0,0,0,0
 6,14,0.0,default,True,False,False;0,0,0,0
-6,15,0.0,default,False,False,False;0,0,0,0
+6,15,0.0,wall,False,False,False;0,0,0,0
 6,16,0.0,default,True,False,False;0,0,0,0
 6,17,0.0,default,True,False,False;0,0,0,0
 6,18,0.0,default,True,False,False;0,0,0,0
 6,19,0.0,default,True,False,False;0,0,0,0
-7,0,0.0,default,True,True,False;0,0,0,0
+7,0,0.0,start,True,True,False;0,0,0,0
 7,1,0.0,default,True,False,False;0,0,0,0
 7,2,0.0,default,True,False,False;0,0,0,0
 7,3,0.0,default,True,False,False;0,0,0,0
 7,4,0.0,default,True,False,False;0,0,0,0
 7,5,0.0,default,True,False,False;0,0,0,0
 7,6,0.0,default,True,False,False;0,0,0,0
-7,7,0.0,default,False,False,False;0,0,0,0
+7,7,0.0,wall,False,False,False;0,0,0,0
 7,8,0.0,default,True,False,False;0,0,0,0
 7,9,0.0,default,True,False,False;0,0,0,0
 7,10,0.0,default,True,False,False;0,0,0,0
-7,11,0.0,default,True,False,False;0,0,0,0
+7,11,0.0,wall,False,False,False;0,0,0,0
 7,12,0.0,default,True,False,False;0,0,0,0
 7,13,0.0,default,True,False,False;0,0,0,0
 7,14,0.0,default,True,False,False;0,0,0,0
-7,15,1.0,1,False,False,False;0,0,0,0
+7,15,0.0,wall,False,False,False;0,0,0,0
 7,16,0.0,default,True,False,False;0,0,0,0
 7,17,0.0,default,True,False,False;0,0,0,0
 7,18,0.0,default,True,False,False;0,0,0,0
-7,19,50.0,modified,True,False,True;0,0,0,0
+7,19,50.0,end,True,False,True;0,0,0,0
 8,0,0.0,default,True,False,False;0,0,0,0
 8,1,0.0,default,True,False,False;0,0,0,0
 8,2,0.0,default,True,False,False;0,0,0,0
@@ -183,15 +182,15 @@ Cubes para:
 8,4,0.0,default,True,False,False;0,0,0,0
 8,5,0.0,default,True,False,False;0,0,0,0
 8,6,0.0,default,True,False,False;0,0,0,0
-8,7,0.0,default,False,False,False;0,0,0,0
+8,7,0.0,wall,False,False,False;0,0,0,0
 8,8,0.0,default,True,False,False;0,0,0,0
 8,9,0.0,default,True,False,False;0,0,0,0
 8,10,0.0,default,True,False,False;0,0,0,0
-8,11,0.0,default,True,False,False;0,0,0,0
+8,11,0.0,wall,False,False,False;0,0,0,0
 8,12,0.0,default,True,False,False;0,0,0,0
 8,13,0.0,default,True,False,False;0,0,0,0
 8,14,0.0,default,True,False,False;0,0,0,0
-8,15,0.0,default,False,False,False;0,0,0,0
+8,15,0.0,wall,False,False,False;0,0,0,0
 8,16,0.0,default,True,False,False;0,0,0,0
 8,17,0.0,default,True,False,False;0,0,0,0
 8,18,0.0,default,True,False,False;0,0,0,0
@@ -203,11 +202,11 @@ Cubes para:
 9,4,0.0,default,True,False,False;0,0,0,0
 9,5,0.0,default,True,False,False;0,0,0,0
 9,6,0.0,default,True,False,False;0,0,0,0
-9,7,0.0,default,False,False,False;0,0,0,0
+9,7,0.0,wall,False,False,False;0,0,0,0
 9,8,0.0,default,True,False,False;0,0,0,0
 9,9,0.0,default,True,False,False;0,0,0,0
 9,10,0.0,default,True,False,False;0,0,0,0
-9,11,0.0,default,True,False,False;0,0,0,0
+9,11,0.0,wall,False,False,False;0,0,0,0
 9,12,0.0,default,True,False,False;0,0,0,0
 9,13,0.0,default,True,False,False;0,0,0,0
 9,14,0.0,default,True,False,False;0,0,0,0
@@ -223,7 +222,7 @@ Cubes para:
 10,4,0.0,default,True,False,False;0,0,0,0
 10,5,0.0,default,True,False,False;0,0,0,0
 10,6,0.0,default,True,False,False;0,0,0,0
-10,7,0.0,default,False,False,False;0,0,0,0
+10,7,0.0,wall,False,False,False;0,0,0,0
 10,8,0.0,default,True,False,False;0,0,0,0
 10,9,0.0,default,True,False,False;0,0,0,0
 10,10,0.0,default,True,False,False;0,0,0,0
@@ -231,7 +230,7 @@ Cubes para:
 10,12,0.0,default,True,False,False;0,0,0,0
 10,13,0.0,default,True,False,False;0,0,0,0
 10,14,0.0,default,True,False,False;0,0,0,0
-10,15,0.0,default,False,False,False;0,0,0,0
+10,15,0.0,wall,False,False,False;0,0,0,0
 10,16,0.0,default,True,False,False;0,0,0,0
 10,17,0.0,default,True,False,False;0,0,0,0
 10,18,0.0,default,True,False,False;0,0,0,0
@@ -243,7 +242,7 @@ Cubes para:
 11,4,0.0,default,True,False,False;0,0,0,0
 11,5,0.0,default,True,False,False;0,0,0,0
 11,6,0.0,default,True,False,False;0,0,0,0
-11,7,0.0,default,False,False,False;0,0,0,0
+11,7,0.0,wall,False,False,False;0,0,0,0
 11,8,0.0,default,True,False,False;0,0,0,0
 11,9,0.0,default,True,False,False;0,0,0,0
 11,10,0.0,default,True,False,False;0,0,0,0
@@ -251,19 +250,19 @@ Cubes para:
 11,12,0.0,default,True,False,False;0,0,0,0
 11,13,0.0,default,True,False,False;0,0,0,0
 11,14,0.0,default,True,False,False;0,0,0,0
-11,15,5.0,5,False,False,False;0,0,0,0
+11,15,0.0,wall,False,False,False;0,0,0,0
 11,16,0.0,default,True,False,False;0,0,0,0
 11,17,0.0,default,True,False,False;0,0,0,0
 11,18,0.0,default,True,False,False;0,0,0,0
 11,19,0.0,default,True,False,False;0,0,0,0
-12,0,0.0,default,True,False,False;0,0,0,0
+12,0,0.0,start,True,True,False;0,0,0,0
 12,1,0.0,default,True,False,False;0,0,0,0
 12,2,0.0,default,True,False,False;0,0,0,0
 12,3,0.0,default,True,False,False;0,0,0,0
 12,4,0.0,default,True,False,False;0,0,0,0
 12,5,0.0,default,True,False,False;0,0,0,0
 12,6,0.0,default,True,False,False;0,0,0,0
-12,7,0.0,default,False,False,False;0,0,0,0
+12,7,0.0,wall,False,False,False;0,0,0,0
 12,8,0.0,default,True,False,False;0,0,0,0
 12,9,0.0,default,True,False,False;0,0,0,0
 12,10,0.0,default,True,False,False;0,0,0,0
@@ -275,7 +274,7 @@ Cubes para:
 12,16,0.0,default,True,False,False;0,0,0,0
 12,17,0.0,default,True,False,False;0,0,0,0
 12,18,0.0,default,True,False,False;0,0,0,0
-12,19,0.0,default,True,False,False;0,0,0,0
+12,19,50.0,end,True,False,True;0,0,0,0
 13,0,0.0,default,True,False,False;0,0,0,0
 13,1,0.0,default,True,False,False;0,0,0,0
 13,2,0.0,default,True,False,False;0,0,0,0
@@ -283,7 +282,7 @@ Cubes para:
 13,4,0.0,default,True,False,False;0,0,0,0
 13,5,0.0,default,True,False,False;0,0,0,0
 13,6,0.0,default,True,False,False;0,0,0,0
-13,7,0.0,default,False,False,False;0,0,0,0
+13,7,0.0,wall,False,False,False;0,0,0,0
 13,8,0.0,default,True,False,False;0,0,0,0
 13,9,0.0,default,True,False,False;0,0,0,0
 13,10,0.0,default,True,False,False;0,0,0,0
@@ -291,7 +290,7 @@ Cubes para:
 13,12,0.0,default,True,False,False;0,0,0,0
 13,13,0.0,default,True,False,False;0,0,0,0
 13,14,0.0,default,True,False,False;0,0,0,0
-13,15,0.0,default,False,False,False;0,0,0,0
+13,15,0.0,wall,False,False,False;0,0,0,0
 13,16,0.0,default,True,False,False;0,0,0,0
 13,17,0.0,default,True,False,False;0,0,0,0
 13,18,0.0,default,True,False,False;0,0,0,0
@@ -303,7 +302,7 @@ Cubes para:
 14,4,0.0,default,True,False,False;0,0,0,0
 14,5,0.0,default,True,False,False;0,0,0,0
 14,6,0.0,default,True,False,False;0,0,0,0
-14,7,0.0,default,False,False,False;0,0,0,0
+14,7,0.0,wall,False,False,False;0,0,0,0
 14,8,0.0,default,True,False,False;0,0,0,0
 14,9,0.0,default,True,False,False;0,0,0,0
 14,10,0.0,default,True,False,False;0,0,0,0
@@ -311,7 +310,7 @@ Cubes para:
 14,12,0.0,default,True,False,False;0,0,0,0
 14,13,0.0,default,True,False,False;0,0,0,0
 14,14,0.0,default,True,False,False;0,0,0,0
-14,15,0.0,default,False,False,False;0,0,0,0
+14,15,0.0,wall,False,False,False;0,0,0,0
 14,16,0.0,default,True,False,False;0,0,0,0
 14,17,0.0,default,True,False,False;0,0,0,0
 14,18,0.0,default,True,False,False;0,0,0,0

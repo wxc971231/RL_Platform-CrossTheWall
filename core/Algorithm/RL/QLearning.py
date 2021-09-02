@@ -1,6 +1,6 @@
 from PyQt5 import QtCore, QtWidgets
 import time
-from core.Util.Function import greedyChoise,getActionByEpsilonGreedy
+from core.Util.Function import greedyChoise,getActionByEpsilonGreedy,randomChoice
 from core.Algorithm.RL import BaseModelFreePolicy
 
 class QLearning(BaseModelFreePolicy):
@@ -109,7 +109,7 @@ class QLearning(BaseModelFreePolicy):
         rewards = []
 
         # 初始状态s设为起点
-        S = self.map.startCube
+        S = randomChoice(self.map.startCubeList)
         S.agentLocated = True
                 
         while self.autoExec:
@@ -117,8 +117,9 @@ class QLearning(BaseModelFreePolicy):
             A = getActionByEpsilonGreedy(self.epsilon,S)
 
             # 执行A，观测到R和S_
-            S_ = S.nextCubeDict[A]
-            R = S.reward - (S != self.map.endCube)*self.map.disCostDiscount*S.distance(S_)
+            nextCubeList = [s_ for s_,p in S.nextCubeDict[A]]
+            S_ = randomChoice(nextCubeList)
+            R = S.reward - self.map.disCostDiscount*S.distance(S_)
             rewards.append(R)
             length += S.distance(S_)
 
@@ -136,7 +137,7 @@ class QLearning(BaseModelFreePolicy):
                     self.map.gridWidget.update()
                 
             # 轨迹终止条件
-            if S == self.map.endCube:
+            if S in self.map.endCubeList:
                 S.agentLocated = False
                 break
             

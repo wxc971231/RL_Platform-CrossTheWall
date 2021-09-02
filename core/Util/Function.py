@@ -28,7 +28,7 @@ def greedyChoise(choiceValueDict):
 # epsilon-贪心选择动作
 def getActionByEpsilonGreedy(epsilon,cube):
     if epsilon > np.random.uniform(0,1):
-        action = randomChoice([a for a in cube.action if cube.nextCubeDict[a] != None])
+        action = randomChoice([a for a in cube.action if cube.nextCubeDict[a] != []])
     else:
         action = greedyChoise(cube.Q)
     return action
@@ -40,7 +40,7 @@ def getActionByPi(cube):
 # 根据策略选择动作，但有epsilon概率试探
 def getActionByEpsilonPi(epsilon,cube):
     if np.random.binomial(1,epsilon) == 1:
-        action = randomChoice([a for a in cube.action if cube.nextCubeDict[a] != None])
+        action = randomChoice([a for a in cube.action if cube.nextCubeDict[a] != []])
     else:
         action = getActionByPi(cube)
     return action
@@ -58,3 +58,10 @@ def Hex2RGB(hex):
     b = int(hex[5:7],16)
     rgb = (r,g,b)
     return rgb
+
+def randomcolor():
+    colorArr = ['1','2','3','4','5','6','7','8','9','A','B','C','D','E','F']
+    color = ""
+    for i in range(6):
+        color += colorArr[np.random.randint(15)]
+    return "#"+color

@@ -1,10 +1,12 @@
+from core.Util.map.Map import MapPara
 import os
+import json
 from core.Util.map import Pen,Cube
 
 class MapFile():
     def __init__(self):
         self.__head = 'This is the map data file for map editor, do not modify it manually'   
-        self.__version = 'v1.0'     
+        self.__version = 'v1.1'     
         self.fileName = ''    
         self.filePath = ''                        
             
@@ -25,24 +27,13 @@ class MapFile():
         fp.write('Pen para:\n')
         for penName in map.penDict:
             pen = map.penDict[penName]
-            fp.write('{0},{1},{2},{3};{4},{5},{6},{7}\n'.format(pen.name,pen.color,pen.reward,pen.isPassable,*(pen.slide)))
+            fp.write(json.dumps(pen.__dict__)+'\n')
         fp.write('\n')
         
         # 地图参数
         fp.write('map para:\n')
-        fp.write('{0},{1}\n'.format(map.gridWidget.row,map.gridWidget.colum))
-        
-        if map.startCube == None: 
-            fp.write('None\n')
-        else:
-            fp.write('{0},{1}\n'.format(map.startCube.row,map.startCube.colum))
-            
-        if map.endCube == None: 
-            fp.write('None\n')
-        else:
-            fp.write('{0},{1}\n'.format(map.endCube.row,map.endCube.colum))
-        fp.write(str(map.disCostDiscount)+'\n')
-
+        mapPara = map.getMapPara()
+        fp.write(json.dumps(mapPara.__dict__)+'\n')
         fp.write('\n')
         
         # 方块参数
@@ -73,7 +64,7 @@ class MapFile():
             # 初步判断标记
             if lines[0] != 'This is the map data file for map editor, do not modify it manually\n':
                 return '配置文件格式错误：文件标识错误!'
-            elif lines[2] != 'UI version:v1.0\n':
+            elif lines[2] != 'UI version:v1.1\n':
                 return '配置文件格式错误：UI版本错误！'
             elif lines[4] != 'Pen para:\n':
                 return '配置文件格式错误：未检测到画笔参数标识！'
@@ -82,79 +73,45 @@ class MapFile():
 
             # 开始加载数据
             else:
-                # 备份当前数据，加载失败时用于恢复
-                penDictBackup = map.penDict.copy()
-                rowBackup = map.gridWidget.row
-                columBackup = map.gridWidget.colum
-                stepRewardBackup = map.disCostDiscount
-                if map.startCube != None:
-                    startCubeBackup = map.startCube.copy()
-                else:
-                    startCubeBackup = None
-
-                if map.endCube != None:
-                    endCubeBackup = map.endCube.copy()
-                else:
-                    endCubeBackup = None                
-
                 # 加载画笔
                 num = 0
                 try:
                     map.penDict.clear()
                     while lines[5+num] != '\n':
                         line = lines[5+num]
-                        slidePos = line.find(';')
-                        para = line[:slidePos].split(',')
-                        slide = line[slidePos+1:].split(',')
+                        penTemp = Pen('','',[0,0,0,0],False,False,False,0.0)
+                        penTemp.__dict__ = json.loads(line[:-1])
+                        map.penDict[penTemp.name] = penTemp
                         
-                        for i in range(4):
-                            slide[i] = int(slide[i])
-
-                        map.penDict[para[0]] = Pen(para[1],para[0],slide,para[3] == 'True',float(para[2]))
                         num = num+1
                 except Exception as e:
                     print(e)
-                    map.penDict = penDictBackup
+                    self.loadMap(map.path,map)  # 加载出错，重新加载当前地图
                     return '画笔数据加载失败'
 
                 # 加载地图配置参数
                 num = num+1
                 if lines[5+num] != 'map para:\n':
+                    self.loadMap(map.path,map)  # 加载出错，重新加载当前地图
                     return '配置文件格式错误：未检测到地图配置参数标识！'
                 else:
-                    startCubePos = [-1,-1]
-                    endCubePos = [-1,-1]
+                    line = lines[5+num+1]
                     try:
-                        size = lines[5+num+1].split(',')
-                        map.gridWidget.row = int(size[0])
-                        map.gridWidget.colum = int(size[1])
-                        
-                        if lines[5+num+2] == 'None\n':
-                            map.startCube = None
-                        else:
-                            startCubePos[0] = int(lines[5+num+2].split(',')[0])
-                            startCubePos[1] = int(lines[5+num+2].split(',')[1])
-                        
-                        if lines[5+num+3] == 'None\n':
-                            map.endCube = None
-                        else:
-                            endCubePos[0] = int(lines[5+num+3].split(',')[0])
-                            endCubePos[1] = int(lines[5+num+3].split(',')[1])
+                        mapPara = MapPara([0,0],[],[],0.0)
+                        mapPara.__dict__ = json.loads(line[:-1])
 
-                        map.disCostDiscount = float(lines[5+num+4])
+                        map.gridWidget.row = mapPara.size[0]
+                        map.gridWidget.colum = mapPara.size[1]
+                        map.disCostDiscount = mapPara.disCostDiscount
                     except Exception as e:
                         print(e)
-                        map.penDict = penDictBackup
-                        map.gridWidget.row = rowBackup
-                        map.gridWidget.colum = columBackup
-                        map.startCube = startCubeBackup
-                        map.endCube = endCubeBackup
-                        map.disCostDiscount = stepRewardBackup
+                        self.loadMap(map.path,map)  # 加载出错，重新加载当前地图
                         return '地图配置参数加载失败'
 
                     # 加载方格数据
-                    num = num+6
+                    num = num+3
                     if lines[5+num] != 'Cubes para:\n':
+                        self.loadMap(map.path,map)  # 加载出错，重新加载当前地图
                         return '配置文件格式错误：未检测到方格参数标识！'
                     else:
                         newCubes = []
@@ -188,19 +145,15 @@ class MapFile():
                                 num = num+1
                         except Exception as e:
                             print(e)
-                            map.penDict = penDictBackup
-                            map.gridWidget.row = rowBackup
-                            map.gridWidget.colum = columBackup
-                            map.startCube = startCubeBackup
-                            map.endCube = endCubeBackup
-                            map.disCostDiscount = stepRewardBackup
+                            self.loadMap(map.path,map)  # 加载出错，重新加载当前地图
                             return '方格数据加载失败'
 
                         map.gridWidget.cubes = newCubes
-                        if startCubePos[0] != -1:
-                            map.startCube = newCubes[startCubePos[0]][startCubePos[1]]
-                        if endCubePos[0] != -1:
-                            map.endCube = newCubes[endCubePos[0]][endCubePos[1]]
+                        map.startCubeList,map.endCubeList = [],[]
+                        for r,c in mapPara.startCubePosList:
+                            map.startCubeList.append(newCubes[r][c])
+                        for r,c in mapPara.endCubePosList:
+                            map.endCubeList.append(newCubes[r][c])
 
         self.fileName = filePath[filePath.rfind('/')+1:-4]
         self.filePath = filePath

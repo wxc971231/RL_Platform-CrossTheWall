@@ -1,7 +1,7 @@
 from PyQt5 import QtCore, QtWidgets
 from core.Algorithm.RL import BaseModelFreePolicy
 import time
-from core.Util.Function import greedyChoise,getActionByEpsilonGreedy
+from core.Util.Function import greedyChoise,getActionByEpsilonGreedy,randomChoice
 
 class Sarsa(BaseModelFreePolicy):
     def __init__(self,controller):
@@ -112,7 +112,7 @@ class Sarsa(BaseModelFreePolicy):
         rewards = []
 
         # 初始状态s设为起点
-        S = self.map.startCube
+        S = randomChoice(self.map.startCubeList)
         S.agentLocated = True
         
         # epsilon-greedy选出A
@@ -121,8 +121,9 @@ class Sarsa(BaseModelFreePolicy):
         # 直到episode终止或手动终止
         while self.autoExec:
             # 执行A，观测到R和S_
-            S_ = S.nextCubeDict[A]
-            R = S.reward - (S != self.map.endCube)*self.map.disCostDiscount*S.distance(S_)
+            nextCubeList = [s_ for s_,p in S.nextCubeDict[A]]
+            S_ = randomChoice(nextCubeList)
+            R = S.reward - self.map.disCostDiscount*S.distance(S_)
             rewards.append(R)
             length += S.distance(S_)
 
@@ -140,7 +141,7 @@ class Sarsa(BaseModelFreePolicy):
                     self.map.gridWidget.update()
                 
             # 轨迹终止条件
-            if S == self.map.endCube:
+            if S in self.map.endCubeList:
                 S.agentLocated = False
                 break
 

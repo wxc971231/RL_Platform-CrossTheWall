@@ -102,7 +102,7 @@ class CWGenerator(QObject):
         wallSpacingMax = int(self.spinBox_wallSpacingMax.value())
         passWayNumMax = int(self.spinBox_passWayNumMax.value())
 
-        self.map.gridWidget.gridInit(rowNum,columNum)
+        self.map.gridWidget.initGrid(rowNum,columNum)
         cubes = self.map.gridWidget.cubes
 
         wallPos = random.randint(wallSpacingMin,wallSpacingMax)
@@ -124,8 +124,8 @@ class CWGenerator(QObject):
         startCube.isStart = True
         endCube.isEnd = True
         endCube.reward = 50
-        self.map.startCube = startCube
-        self.map.endCube = endCube
+        self.map.startCubeList = [startCube,]
+        self.map.endCubeList = [endCube,]
 
         # 设置保存标识
         self.editor.setMapSaved(False)

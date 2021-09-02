@@ -115,11 +115,11 @@ class PolicyIteration(BasePolicy):
                 v = 0
                 if cube.isPassable:
                     # V = sum{pi(a|s)*[R(s,a) + gamma*sum{p(s'|s,a)*V(s')}]}
-                    for a in cube.action:
-                        nc = cube.nextCubeDict[a]
-                        if nc != None:
-                            disCost = (cube != self.map.endCube)*self.map.disCostDiscount*cube.distance(nc)
-                            v = v + self.pi[row][colum][a]*(cube.reward - disCost + self.gamma*nc.value)
+                    for a in cube.action:                            
+                        for nc,p in cube.nextCubeDict[a]:
+                            if nc != None:
+                                disCost = (cube not in self.map.endCubeList)*self.map.disCostDiscount*cube.distance(nc)
+                                v = v + self.pi[row][colum][a]*(cube.reward - p*disCost + p*self.gamma*nc.value)
                 newValue_row.append(v)
             newValue.append(newValue_row)
 
@@ -163,12 +163,13 @@ class PolicyIteration(BasePolicy):
                     # 计算状态动作价值Q
                     Q = cube.Q
                     for a in cube.action:
-                        nc = cube.nextCubeDict[a]
-                        if nc != None:
-                            disCost = (cube != self.map.endCube)*self.map.disCostDiscount*cube.distance(nc)
-
+                        if cube.nextCubeDict[a] != []:
                             # Q = R(s,a) + gamma*sum{p(s'|s,a)*V(s')}
-                            Q[a] = cube.reward - disCost + self.gamma*nc.value  
+                            Q[a] = cube.reward
+                            for nc,p in cube.nextCubeDict[a]:
+                                if nc != None:
+                                    disCost = (cube not in self.map.endCubeList)*self.map.disCostDiscount*cube.distance(nc)
+                                    Q[a] = Q[a] - p*disCost + p*self.gamma*nc.value  
 
                     # 在Q上贪心来更新策略pi，相同价值的动作平分概率
                     cube.updatePolicyByQ()
