@@ -1,7 +1,8 @@
 from PyQt5 import QtCore, QtWidgets
 from core.Algorithm.RL import BaseModelFreePolicy
-from core.Util.Function import greedyChoise,getActionByEpsilonGreedy,randomChoice
+from core.Util.Function import greedyChoise,getActionByEpsilonGreedy,randomChoice,probabilisticChoise,probabilisticChoiseDict
 from core.Util import MergeablePriorityQueue
+from core.Util.map.Model import Model
 import time
 
 class DynaQPrior(BaseModelFreePolicy):
@@ -9,6 +10,7 @@ class DynaQPrior(BaseModelFreePolicy):
         super().__init__(controller) 
         self.theta = 1e-5                   # 小于theta的价值变化被忽略以提升效率
         self.pq = MergeablePriorityQueue()  # (自动合并)优先队列   
+        self.model = Model(controller)
         self.initModel()                    # 学习的环境模型
 
     # 控制UI（执行此策略时嵌入到controller窗口中）
@@ -103,8 +105,8 @@ class DynaQPrior(BaseModelFreePolicy):
         self.waitAutoExecEnd()
 
     def initModel(self):
-        self.model = {} # 学得模型，映射(s,a) -> (s_,r)
-        self.pq.reset() # 优先队列
+        self.model.reset()
+        self.pq.reset()
 
     def resetPolicy(self):
         self.waitAutoExecEnd()
@@ -116,26 +118,22 @@ class DynaQPrior(BaseModelFreePolicy):
         self.clearMonitor()     # 清空监视器
 
     # 把学得模型中状态s的所有前导(_s,_a)优先级提高
-    def updatePriority(self,s,P):
-        if P < self.theta or self.planTimes == 0:
+    def updatePriority(self,s,weight):
+        if weight < self.theta or self.planTimes == 0:
             return
 
         for _s in s.priorCubeDict:
-            _a = s.priorCubeDict[_s]
-            if (_s,_a) in self.model:
-                # 学得的模型如果和真实不符，报错
-                if self.model[(_s,_a)][1] != s:
-                    assert False
-
+            _a,p = s.priorCubeDict[_s]
+            if self.model.inModel(_s,_a):
                 # 前导(_s,_a)在队列中的优先级提升P 
-                self.pq.enQueue((_s,_a),P)
+                self.pq.enQueue((_s,_a),weight)
                     
     def learnFromTuple(self,S,A,R,S_,A_):
         S.Q[A] = S.Q[A] + self.alpha*(R + self.gamma*S_.Q[A_]-S.Q[A])
         
         # 依价值变化调整S前导状态的优先级（注意，按这里的实现方式，alpha=1时退化到Q-learning）
-        P = abs(R + self.gamma*S_.Q[A_]-S.Q[A])
-        self.updatePriority(S,P)
+        weight = abs(R + self.gamma*S_.Q[A_]-S.Q[A])
+        self.updatePriority(S,weight)
 
         # 更新策略pi(Q-learning中仅用于UI显示)
         S.updatePolicyByQ()  
@@ -157,14 +155,15 @@ class DynaQPrior(BaseModelFreePolicy):
             A = getActionByEpsilonGreedy(self.epsilon,S)
 
             # 执行A，观测到R和S_
-            nextCubeList = [s_ for s_,p in S.nextCubeDict[A]]
-            S_ = randomChoice(nextCubeList)
+            nextCubeList = [s_ for  s_,p in S.nextCubeDict[A]]
+            nextCubeProbList = [p for  s_,p in S.nextCubeDict[A]] 
+            S_ = probabilisticChoise(nextCubeList,nextCubeProbList)
             R = S.reward - self.map.disCostDiscount*S.distance(S_)
             rewards.append(R)
             length += S.distance(S_)
 
             # 模型学习
-            self.model[(S,A)] = (R,S_) 
+            self.model.update(S,A,S_,R)
 
             # 目标策略：greedy选择A_  
             A_ = greedyChoise(S_.Q)         
@@ -172,12 +171,15 @@ class DynaQPrior(BaseModelFreePolicy):
             # 一步Q-Learning更新
             self.learnFromTuple(S,A,R,S_,A_)
 
+            #if P != 1:
+            #    print(S.row,S.colum,P)
+
             if self.planTimes > 0:
                 # 按优先级进行规划
                 nSteps = min(self.pq.len,self.planTimes)
                 for i in range(nSteps):
                     s,a = self.pq.deQueue()
-                    r,s_ = self.model[(s,a)]
+                    s_,r,p = self.model.getTransfer(s,a)
                     a_ = greedyChoise(s_.Q)
                     self.learnFromTuple(s,a,r,s_,a_)
                         

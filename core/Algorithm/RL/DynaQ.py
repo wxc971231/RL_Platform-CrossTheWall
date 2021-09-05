@@ -1,11 +1,14 @@
 from PyQt5 import QtCore, QtWidgets
 from core.Algorithm.RL import BaseModelFreePolicy
-import time
+from core.Util.map.Model import Model
 from core.Util.Function import greedyChoise,getActionByEpsilonGreedy,randomChoice
+import time
+
 
 class DynaQ(BaseModelFreePolicy):
     def __init__(self,controller):
         super().__init__(controller) 
+        self.model = Model(controller)
         self.initModel()                    # 学习的环境模型
 
     # 控制UI（执行此策略时嵌入到controller窗口中）
@@ -100,7 +103,7 @@ class DynaQ(BaseModelFreePolicy):
         self.waitAutoExecEnd()
     
     def initModel(self):
-        self.model = {} # 学得模型，映射(s,a) -> (s_,r)
+        self.model.reset()
 
     def resetPolicy(self):
         self.waitAutoExecEnd()
@@ -147,12 +150,11 @@ class DynaQ(BaseModelFreePolicy):
             self.learnFromTuple(S,A,R,S_,A_)
 
             # 模型学习
-            self.model[(S,A)] = (R,S_) 
+            self.model.update(S,A,S_,R)
 
             # 随机从当前学得模型选择动作进行规划
             for i in range(self.planTimes):
-                s,a = randomChoice(list(self.model))
-                r,s_ = self.model[(s,a)]
+                s,a,s_,r = self.model.getRandomTranfer()
                 a_ = greedyChoise(s_.Q)
                 self.learnFromTuple(s,a,r,s_,a_)
 

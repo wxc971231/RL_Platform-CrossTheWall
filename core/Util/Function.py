@@ -7,14 +7,14 @@ def valueLimit(value,MAX,MIN):
     if value < MIN: return MIN
     return value
 
-# 依概率选择(字典形式)
-def probabilisticChoiseDict(choiceProbabilitiesDict):
-    cList, pList = zip(*choiceProbabilitiesDict.items()) 
-    return np.random.choice(cList, p=pList)
-
-# 依概率选择(列表形式)
+# 依概率选择(参数为列表)
 def probabilisticChoise(choiceList,probabilities):
-    return np.random.choice(choiceList, p=probabilities)
+    index = np.random.choice(range(len(choiceList)), p=probabilities)
+    return choiceList[index]
+
+# 依概率选择(参数为有序字典collections.OrderedDict)
+def probabilisticChoiseDict(dict):
+    return probabilisticChoise(list(dict.keys()),list(dict.values()))
 
 # 等概率随机选择
 def randomChoice(choiceList):
