@@ -6,13 +6,14 @@ from core.Util.Function import valueLimit
 
 # 地图方格对象
 class Cube():
-    def __init__(self,x,y,row,colum,l,map):
+    def __init__(self,x,y,row,colum,l,map,selectedTask):
         self.x = x              # 左上角坐标
         self.y = y
         self.l = l              # 边长
         self.row = row          # 行位置
         self.colum = colum      # 列位置
         self.map = map          # 父对象map的引用，便于访问父对象数据
+        self.selectedTask = selectedTask
 
         self.centerX = x+0.5*l  # 中心坐标
         self.centerY = y+0.5*l
@@ -27,7 +28,8 @@ class Cube():
         self.value = 0.0        # 状态价值
         self.Q = {}             # 状态动作价值
         self.pi = {}            # 策略
-        self.action = list(range(map.gridWidget.row-1,-map.gridWidget.row,-1))  # 动作列表(可选速度值)
+        self.setActions(self.selectedTask)
+
         self.agentLocated = False # agent正位于此处
         self.visited = False    # 访问过标记，显示方格开始轨迹时使用
 
@@ -41,11 +43,17 @@ class Cube():
         self.centerX = x+0.5*l  # 中心坐标
         self.centerY = y+0.5*l
 
+    def setActions(self,task):
+        if task == 'CrossTheWall':
+            self.action = list(range(self.map.gridWidget.row-1,-self.map.gridWidget.row,-1))  # 动作列表(可选速度值)
+        else: 
+            self.action = [0,1,2,3] # 动作列表        
+
     # 缓存所有相邻可达方格
     def storeNeighborCube(self):
         if self.isPassable:
             # 终点直接回起点，随便保留一个动作即可
-            if self in self.map.endCubeList:
+            if self.map.endCubeList != None and self in self.map.endCubeList:
                 self.action = [0]
 
             for a in self.action:
@@ -66,9 +74,10 @@ class Cube():
         self.pi = {}            # 策略
 
         # 允许顶着墙走导致agent不动(即允许nc == self)
+        N = len([a for a in self.nextCubeDict if self.nextCubeDict[a] != []])
         for a in self.nextCubeDict:
             if self.nextCubeDict[a] != []:
-                self.pi[a] = 1/len(self.nextCubeDict)
+                self.pi[a] = 1/N
                 self.Q[a] = 0
             else:
                 self.pi[a] = 0
@@ -195,7 +204,7 @@ class Cube():
 
     # 返回一个方格副本
     def copy(self):
-        cube = Cube(self.x,self.y,self.row,self.colum,self.l,self.map)
+        cube = Cube(self.x,self.y,self.row,self.colum,self.l,self.map,self.selectedTask)
         cube.penName = self.penName
         cube.slide = self.slide
         cube.isPassable = self.isPassable

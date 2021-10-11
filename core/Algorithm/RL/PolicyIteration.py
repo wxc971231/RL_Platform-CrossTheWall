@@ -111,7 +111,6 @@ class PolicyIteration(BasePolicy):
             newValue_row = []
             for colum in range(gridWidget.colum):
                 cube = gridWidget.cubes[row][colum]
-
                 v = 0
                 if cube.isPassable:
                     # V = sum{pi(a|s)*[R(s,a) + gamma*sum{p(s'|s,a)*V(s')}]}

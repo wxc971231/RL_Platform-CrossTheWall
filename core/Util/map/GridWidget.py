@@ -53,7 +53,7 @@ class GridWidget(QtWidgets.QWidget):
         for i in range(self.row):
             colum_cubes = []
             for j in range(self.colum):
-                cube = Cube(0,0,i,j,0,self.map)
+                cube = Cube(0,0,i,j,0,self.map,self.map.controller.selectedTask)
                 colum_cubes.append(cube)
             self.cubes.append(colum_cubes)
 
@@ -69,6 +69,13 @@ class GridWidget(QtWidgets.QWidget):
         self.cubeArray = np.vstack([rowArray.ravel(), columArray.ravel()]).T
         self.distanceArray = pairwise.pairwise_distances(self.cubeArray,metric='euclidean').reshape(self.row,self.colum,self.row,self.colum)
 
+    def taskChanged(self,task):
+        for i in range(self.row):
+            for j in range(self.colum):
+                cube = self.cubes[i][j]
+                cube.setActions(task)
+        self.reStoreAllNeighborCube()
+
     # 下一个方格及概率
     # 返回 [row,colum] 处执行 action 后转移到的方格及转移概率列表 [(s_,p),...]
     def nextCubeAndProbList(self,row,colum,action):
@@ -81,26 +88,64 @@ class GridWidget(QtWidgets.QWidget):
                 nextCubes.append((cube,1/len(self.map.startCubeList)))
             return nextCubes
 
-        # 计算转移到的位置
-        next_row = row - action
-        next_colum = colum + 1
-        
-        #next_row = valueLimit(next_row,self.row-1,0)
-        if next_row < 0 or next_row > self.row-1:
-            return []
-        
-        if next_colum > self.colum-1:
-            next_colum = self.colum-1
-        elif not self.cubes[next_row][next_colum].isPassable:
-            next_colum = colum
-        
-        # 这里允许顶着墙走导致不动的情况，正常返回方格，否则依概率选择动作时会报错
-        #if row == next_row and colum == next_colum:
-        #    return None
+        if self.map.controller.selectedTask == 'CrossTheWall':
+            # 计算转移到的位置
+            next_row = row - action
+            next_colum = colum + 1
+            
+            #next_row = valueLimit(next_row,self.row-1,0)
+            if next_row < 0 or next_row > self.row-1:
+                return []
+            
+            if next_colum > self.colum-1:
+                next_colum = self.colum-1
+            elif not self.cubes[next_row][next_colum].isPassable:
+                next_colum = colum
+            
+            # 这里允许顶着墙走导致不动的情况，正常返回方格，否则依概率选择动作时会报错
+            #if row == next_row and colum == next_colum:
+            #    return []
+
+        elif self.map.controller.selectedTask == 'GridMaze':
+            # 上下左右
+            temp_colum = [0,0,-1,1] 
+            temp_row = [-1,1,0,0]
+            
+            # 走一步就出地图
+            next_row = row + temp_row[action]
+            next_colum = colum + temp_colum[action]
+            if next_row > self.row-1 or next_row < 0 or next_colum > self.colum-1 or next_colum < 0:
+                return []
+
+            # 如果撞墙，不动
+            if not self.cubes[next_row][next_colum].isPassable:
+                next_row = row
+                next_colum = colum
+            
+            # 偏移处理
+            slide = cube.slide
+            if slide != [0,0,0,0]:
+                for direction in range(len(slide)):
+                    #找到偏移的方向
+                    if slide[direction] != 0:
+                        for i in range(slide[direction]):
+                            next_row += temp_row[direction]
+                            next_colum += temp_colum[direction]
+
+                            # 如果偏移到终点，停止
+                            if self.cubes[next_row][next_colum] in self.map.endCubeList:
+                                return [(self.cubes[next_row][next_colum],1)]
+
+                            # 一直偏移直到停在边界或墙壁前
+                            if (next_row > self.row-1 or next_row < 0 or next_colum > self.colum-1 or next_colum < 0) or not self.cubes[next_row][next_colum].isPassable:
+                                next_row -= temp_row[direction]
+                                next_colum -= temp_colum[direction]
+                                break
+                        break     
 
         return [(self.cubes[next_row][next_colum],1)]
 
-    # 更新相邻可达方格，地图编辑完成时调用
+    # 更新相邻可达方格，地图编辑完成、任务切换时调用
     def reStoreAllNeighborCube(self):
         for r in range(self.row):
             for c in range(self.colum):
@@ -286,7 +331,9 @@ class GridWidget(QtWidgets.QWidget):
                                             painter.setPen(QtGui.QPen(QtGui.QColor(self.map.policyColor), 0.05*self.cubes[0][0].l, QtCore.Qt.SolidLine)) 
                                             painter.drawLine(cube.centerX, cube.centerY, nc.centerX, nc.centerY)
 
-                                            painter.drawText(QtCore.QRect(nc.x+0.1*nc.l,nc.y+0.1*nc.l,0.8*nc.l,0.8*nc.l),QtCore.Qt.AlignHCenter | QtCore.Qt.AlignTop ,str(round(cube.pi[a],3)))
+                                            # 如果不显示Q，显示一下pi概率
+                                            if not self.map.showQ:
+                                                painter.drawText(QtCore.QRect(nc.x+0.1*nc.l,nc.y+0.1*nc.l,0.8*nc.l,0.8*nc.l),QtCore.Qt.AlignHCenter | QtCore.Qt.AlignTop ,str(round(cube.pi[a],3)))
                         
                     # 显示此格开始的所有可能轨迹(BFS)
                     else:

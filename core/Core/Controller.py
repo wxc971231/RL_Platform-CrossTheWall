@@ -17,20 +17,22 @@ class Controller(QMainWindow):
     def __init__(self):
         super().__init__() 
 
+        self.penList = []                   # 画笔列表
+        self.timeStep = 0.01                # 计算周期
+        self.realTimeUI = True              # 是否实时更新UI
+        self.UIStep = 10                    # UI更新周期（以计算周期为单位）
+        self.selectedTask = 'CrossTheWall'  # 'CrossTheWall' or 'GridMaze'
+
         # loadMapDialog在加载地图时弹出
         self.loadMapDialog = LoadMapDialog((os.getcwd()+'/map').replace('\\','/'))
         self.loadMapDialog.loadMapSignal.connect(self.loadMap)
 
+        # 其他核心组件
         self.figureGenerator = FigureGenerator(self)    # 图表生成器
-        self.mapEditor = MapEditor(self)    # 地图编辑器
-        self.map = self.mapEditor.map       # map对象
-        self.monitor = Monitor(self)        # 波形监视器
+        self.mapEditor = MapEditor(self)                # 地图编辑器
+        self.monitor = Monitor(self)                    # 波形监视器
         
-        self.penList = []                   # 画笔列表
-        self.timeStep = 0.01                # 计算周期
-
-        self.realTimeUI = True              # 实时更新UI
-        self.UIStep = 10                    # UI更新周期（以计算周期为单位）
+        self.map = self.mapEditor.map                   # map对象
 
         # 建立Ui 
         self.setupUi()
@@ -298,15 +300,22 @@ class Controller(QMainWindow):
         self.checkBox_showCubePolicyOneStep.setText("")
         self.checkBox_showCubePolicyOneStep.setChecked(False)
         self.globalSettingLayout.addWidget(self.checkBox_showCubePolicyOneStep, 9, 1, 1, 1)
-        
+
+        self.comboBox_task = QtWidgets.QComboBox(self.centralwidget)
+        self.comboBox_task.setObjectName("comboBox_task")
+        self.globalSettingLayout.addWidget(self.comboBox_task, 10, 0, 1, 2)
+        self.comboBox_task.addItem('CrossTheWall')
+        self.comboBox_task.addItem('GridMaze')
+        self.comboBox_task.setCurrentText(self.selectedTask)
+
         self.pbt_policyColor = QtWidgets.QPushButton(self.centralwidget)
         self.pbt_policyColor.setObjectName("pbt_policyColor")
         self.pbt_policyColor.setStyleSheet('QPushButton{background:#AA0000;}')
-        self.globalSettingLayout.addWidget(self.pbt_policyColor, 10, 0, 1, 2)
+        self.globalSettingLayout.addWidget(self.pbt_policyColor, 11, 0, 1, 2)
 
         self.pbt_edit = QtWidgets.QPushButton(self.centralwidget)
         self.pbt_edit.setObjectName("pbt_edit")
-        self.globalSettingLayout.addWidget(self.pbt_edit, 11, 0, 1, 2)
+        self.globalSettingLayout.addWidget(self.pbt_edit, 12, 0, 1, 2)
         self.settingLayout.addLayout(self.globalSettingLayout)
 
         # 下分割和其他设置
@@ -316,7 +325,7 @@ class Controller(QMainWindow):
         self.gridLayout.addLayout(self.settingLayout, 1, 0, 1, 1)
         
         self.gridLayout.setColumnStretch(2, 1)
-        self.setCentralWidget(self.centralwidget)
+        self.setCentralWidget(self.centralwidget)               
 
         # 状态栏
         self.statusbar = QtWidgets.QStatusBar(self)
@@ -408,7 +417,7 @@ class Controller(QMainWindow):
 
     def retranslateUi(self):
         _translate = QtCore.QCoreApplication.translate
-        self.setWindowTitle(_translate("EditorWindow", "Grid World"))
+        self.setWindowTitle(_translate("EditorWindow", self.selectedTask))
 
         self.menuMap.setTitle(_translate("EditorWindow", "Map"))
         self.menuPolicy.setTitle(_translate("EditorWindow", "Policy"))
@@ -476,7 +485,7 @@ class Controller(QMainWindow):
         self.spinBox_maxReward.valueChanged.connect(lambda:self.setMaxValue(float(self.spinBox_maxReward.value())))
         self.spinBox_timeStep.valueChanged.connect(lambda:self.setTimeStep(float(self.spinBox_timeStep.value())))
         self.spinBox_UIStep.valueChanged.connect(lambda:self.setUIStep(int(self.spinBox_UIStep.value())))
-        
+        self.comboBox_task.currentIndexChanged.connect(self.selectTask)         # 选择任务
         self.action_policy_iteration.triggered.connect(lambda: self.loadAlgorithm(self.algorithmDict['modelBased']['policyIteration']))
         self.action_value_iteration.triggered.connect(lambda: self.loadAlgorithm(self.algorithmDict['modelBased']['valueIteration']))
         self.action_mc_policy_iteration.triggered.connect(lambda: self.loadAlgorithm(self.algorithmDict['modelFree']['mcPolicyIteration']))
@@ -537,6 +546,12 @@ class Controller(QMainWindow):
     def updateUIRealTime(self):
         self.realTimeUI = self.checkBox_updateUI.isChecked()
         self.spinBox_UIStep.setEnabled(self.realTimeUI)
+
+    def selectTask(self):
+        task = self.comboBox_task.currentText()
+        self.selectedTask = task
+        self.setWindowTitle(task + ' - ')
+        self.reloadMap()
 
     def refreshPenList(self):
         for i in range(len(self.penList)):
@@ -603,9 +618,12 @@ class Controller(QMainWindow):
             self.map.gridWidget.update()
             self.updateGridWithColor()
             self.refreshPenList()
-            self.setWindowTitle('Corss The Wall - ' + self.map.name)
+            self.setWindowTitle(self.selectedTask + ' - ' + self.map.name)
             self.label_disCostDiscount.setText('路程折扣：'+str(round(self.map.disCostDiscount,2)))
             self.map.reloadSignal.emit()
+
+    def reloadMap(self):
+        self.loadMap(self.map.path)
 
     def showMapEditor(self):
         self.mapEditor.show()
@@ -621,7 +639,7 @@ class Controller(QMainWindow):
         self.checkBox_showReward.setChecked(True)
         self.checkBox_valueColor.setChecked(False)
         self.label_disCostDiscount.setText('路程折扣：'+str(round(self.map.disCostDiscount,2)))
-        self.setWindowTitle('Corss The Wall - ' + self.map.name)
+        self.setWindowTitle(self.selectedTask + ' - ' + self.map.name)
         self.gridLayout.addWidget(self.map.gridWidget, 1, 2, 1, 1)
         self.refreshPenList()
 

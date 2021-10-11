@@ -91,43 +91,67 @@ class MapEditor(QMainWindow):
         self.cubeSettingLayout.setObjectName("cubeSettingLayout")
         self.label_cubeTitle = QtWidgets.QLabel(self.centralwidget)
         self.label_cubeTitle.setObjectName("label_cubeTitle")
-        self.cubeSettingLayout.addWidget(self.label_cubeTitle, 0, 0, 1, 2, QtCore.Qt.AlignHCenter)
+        self.cubeSettingLayout.addWidget(self.label_cubeTitle, 0, 0, 1, 4, QtCore.Qt.AlignHCenter)
+        self.label_cubeUp = QtWidgets.QLabel(self.centralwidget)
+        self.label_cubeUp.setObjectName("label_cubeUp")
+        self.cubeSettingLayout.addWidget(self.label_cubeUp, 1, 0, 1, 1)
+        self.spinBox_cubeUp = QtWidgets.QSpinBox(self.centralwidget)
+        self.spinBox_cubeUp.setObjectName("spinBox_cubeUp")
+        self.cubeSettingLayout.addWidget(self.spinBox_cubeUp, 1, 1, 1, 1)
+        self.label_cubeDown = QtWidgets.QLabel(self.centralwidget)
+        self.label_cubeDown.setObjectName("label_cubeDown")
+        self.cubeSettingLayout.addWidget(self.label_cubeDown, 1, 2, 1, 1)
+        self.spinBox_cubeDown = QtWidgets.QSpinBox(self.centralwidget)
+        self.spinBox_cubeDown.setObjectName("spinBox_cubeDown")
+        self.cubeSettingLayout.addWidget(self.spinBox_cubeDown, 1, 3, 1, 1)
+        self.label_cubeLeft = QtWidgets.QLabel(self.centralwidget)
+        self.label_cubeLeft.setObjectName("label_cubeLeft")
+        self.cubeSettingLayout.addWidget(self.label_cubeLeft, 2, 0, 1, 1)
+        self.spinBox_cubeLeft = QtWidgets.QSpinBox(self.centralwidget)
+        self.spinBox_cubeLeft.setObjectName("spinBox_cubeLeft")
+        self.cubeSettingLayout.addWidget(self.spinBox_cubeLeft, 2, 1, 1, 1)
+        self.label_cubeRight = QtWidgets.QLabel(self.centralwidget)
+        self.label_cubeRight.setObjectName("label_cubeRight")
+        self.cubeSettingLayout.addWidget(self.label_cubeRight, 2, 2, 1, 1)
+        self.spinBox_cubeRight = QtWidgets.QSpinBox(self.centralwidget)
+        self.spinBox_cubeRight.setObjectName("spinBox_cubeRight")
+        self.cubeSettingLayout.addWidget(self.spinBox_cubeRight, 2, 3, 1, 1)
         self.label_cubeReward = QtWidgets.QLabel(self.centralwidget)
         self.label_cubeReward.setObjectName("label_cubeReward")
-        self.cubeSettingLayout.addWidget(self.label_cubeReward, 1, 0, 1, 1)
+        self.cubeSettingLayout.addWidget(self.label_cubeReward, 3, 0, 1, 2)
         self.spinBox_cubeReward = QtWidgets.QDoubleSpinBox(self.centralwidget)
         self.spinBox_cubeReward.setObjectName("spinBox_cubeReward")
         self.spinBox_cubeReward.setMaximum(1000)
         self.spinBox_cubeReward.setMinimum(-1000)
-        self.cubeSettingLayout.addWidget(self.spinBox_cubeReward, 1, 1, 1, 1)
+        self.cubeSettingLayout.addWidget(self.spinBox_cubeReward, 3, 2, 1, 2)
         self.checkBox_cubePass = QtWidgets.QCheckBox(self.centralwidget)
         self.checkBox_cubePass.setText("")
         self.checkBox_cubePass.setObjectName("checkBox_cubePass")
-        self.cubeSettingLayout.addWidget(self.checkBox_cubePass, 2, 1, 1, 1)
+        self.cubeSettingLayout.addWidget(self.checkBox_cubePass, 4, 2, 1, 2)
         self.label_cubePass = QtWidgets.QLabel(self.centralwidget)
         self.label_cubePass.setObjectName("label_cubePass")
-        self.cubeSettingLayout.addWidget(self.label_cubePass, 2, 0, 1, 1)
+        self.cubeSettingLayout.addWidget(self.label_cubePass, 4, 0, 1, 2)
         self.label_cubeStart = QtWidgets.QLabel(self.centralwidget)
         self.label_cubeStart.setObjectName("label_cubeStart")
-        self.cubeSettingLayout.addWidget(self.label_cubeStart, 3, 0, 1, 1)
+        self.cubeSettingLayout.addWidget(self.label_cubeStart, 5, 0, 1, 2)
         self.checkBox_cubeStart = QtWidgets.QCheckBox(self.centralwidget)
         self.checkBox_cubeStart.setText("")
         self.checkBox_cubeStart.setObjectName("checkBox_cubeStart")
-        self.cubeSettingLayout.addWidget(self.checkBox_cubeStart, 3, 1, 1, 1)
+        self.cubeSettingLayout.addWidget(self.checkBox_cubeStart, 5, 2, 1, 2)
         self.label_cubeEnd = QtWidgets.QLabel(self.centralwidget)
         self.label_cubeEnd.setObjectName("label_cubeEnd")
-        self.cubeSettingLayout.addWidget(self.label_cubeEnd, 4, 0, 1, 1)
+        self.cubeSettingLayout.addWidget(self.label_cubeEnd, 6, 0, 1, 2)
         self.checkBox_cubeEnd = QtWidgets.QCheckBox(self.centralwidget)
         self.checkBox_cubeEnd.setText("")
         self.checkBox_cubeEnd.setObjectName("checkBox_cubeEnd")
-        self.cubeSettingLayout.addWidget(self.checkBox_cubeEnd, 4, 1, 1, 1)
+        self.cubeSettingLayout.addWidget(self.checkBox_cubeEnd, 6, 2, 1, 2)
         self.pbt_editCube = QtWidgets.QPushButton(self.centralwidget)
         self.pbt_editCube.setObjectName("pbt_editCube")
-        self.cubeSettingLayout.addWidget(self.pbt_editCube, 5, 0, 1, 2)
+        self.cubeSettingLayout.addWidget(self.pbt_editCube, 7, 0, 1, 4)
         self.settingLayout.addLayout(self.cubeSettingLayout)
         self.pbt_saveAsPen = QtWidgets.QPushButton(self.centralwidget)
         self.pbt_saveAsPen.setObjectName("pbt_saveAsPen")
-        self.cubeSettingLayout.addWidget(self.pbt_saveAsPen, 6, 0, 1, 2)
+        self.cubeSettingLayout.addWidget(self.pbt_saveAsPen, 8, 0, 1, 4)
 
         spacerItem = QtWidgets.QSpacerItem(20, 20, QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         self.settingLayout.addItem(spacerItem)
@@ -196,9 +220,15 @@ class MapEditor(QMainWindow):
         self.checkBox_showGridWithColor.setObjectName("checkBox_showGridWithColor")
         self.checkBox_showGridWithColor.setChecked(True)
         self.globalSettingLayout.addWidget(self.checkBox_showGridWithColor, 3, 1, 1, 1)
+        self.comboBox_task = QtWidgets.QComboBox(self.centralwidget)
+        self.comboBox_task.setObjectName("comboBox_task")
+        self.globalSettingLayout.addWidget(self.comboBox_task, 4, 0, 1, 2)
+        self.comboBox_task.addItem('CrossTheWall')
+        self.comboBox_task.addItem('GridMaze')
+        self.comboBox_task.setCurrentText(self.controller.selectedTask)
         self.pbt_finish = QtWidgets.QPushButton(self.centralwidget)
         self.pbt_finish.setObjectName("pbt_finish")
-        self.globalSettingLayout.addWidget(self.pbt_finish, 4, 0, 1, 2)
+        self.globalSettingLayout.addWidget(self.pbt_finish, 5, 0, 1, 2)
         self.settingLayout.addLayout(self.globalSettingLayout)
         spacerItem1 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.settingLayout.addItem(spacerItem1)
@@ -261,6 +291,7 @@ class MapEditor(QMainWindow):
         self.checkBox_showGridWithColor.clicked.connect(self.updateGridWithColor) # 分色显示
         self.checkBox_penDrawing.toggled.connect(self.setEditorMode)            # 开始绘制
         self.comboBox_penName.currentIndexChanged.connect(self.selectPen)       # 选择画笔
+        self.comboBox_task.currentIndexChanged.connect(self.selectTask)         # 选择任务
         self.pbt_editCube.clicked.connect(self.updateCube)                      # 更新方格属性
         self.pbt_editPen.clicked.connect(self.showPenDialog)                    # 编辑画笔
         self.pbt_deletePen.clicked.connect(self.deletPen)                       # 删除画笔
@@ -274,6 +305,11 @@ class MapEditor(QMainWindow):
         self.penDialog.editPenSignal.connect(self.editPen)
         self.map.gridWidget.cubeSelectedSignal.connect(self.showCubeSetting)
         self.map.gridWidget.cubeSelectedSignal.connect(self.showPenSetting)
+
+        self.spinBox_cubeDown.valueChanged.connect(lambda: self.setSlide('down'))
+        self.spinBox_cubeUp.valueChanged.connect(lambda: self.setSlide('up'))
+        self.spinBox_cubeLeft.valueChanged.connect(lambda: self.setSlide('left'))
+        self.spinBox_cubeRight.valueChanged.connect(lambda: self.setSlide('right'))
 
     def retranslateUi(self):
         _translate = QtCore.QCoreApplication.translate
@@ -302,6 +338,10 @@ class MapEditor(QMainWindow):
         self.label_genTitle.setText(_translate("self", "地图生成器"))
         self.menuGenerator.setTitle(_translate("self", "Generator"))
         self.action_generator_CW.setText(_translate("self", "Crossing Wall"))
+        self.label_cubeLeft.setText(_translate("self", "左滑"))
+        self.label_cubeRight.setText(_translate("self", "右滑"))
+        self.label_cubeUp.setText(_translate("self", "上滑"))
+        self.label_cubeDown.setText(_translate("self", "下滑"))
 
     # UI显示-----------------------------------------------------------------------
     def checkBoxCubeStartClicked(self):
@@ -324,11 +364,57 @@ class MapEditor(QMainWindow):
             self.checkBox_cubeStart.setChecked(False)
             self.checkBox_cubeEnd.setChecked(False)
 
+    # 设定方格滑动
+    def setSlide(self,slide):
+        if slide == 'up':
+            self.spinBox_cubeDown.setValue(0)
+            self.spinBox_cubeRight.setValue(0)
+            self.spinBox_cubeLeft.setValue(0)  
+        elif slide == 'down':
+            self.spinBox_cubeUp.setValue(0)
+            self.spinBox_cubeRight.setValue(0)
+            self.spinBox_cubeLeft.setValue(0)  
+        elif slide == 'left':
+            self.spinBox_cubeRight.setValue(0)
+            self.spinBox_cubeDown.setValue(0)
+            self.spinBox_cubeUp.setValue(0)
+        elif slide == 'right':
+            self.spinBox_cubeLeft.setValue(0) 
+            self.spinBox_cubeDown.setValue(0)
+            self.spinBox_cubeUp.setValue(0)  
+
+    def clearSlide(self):
+        self.spinBox_cubeUp.setValue(0)
+        self.spinBox_cubeDown.setValue(0)
+        self.spinBox_cubeLeft.setValue(0)
+        self.spinBox_cubeRight.setValue(0)  
+
+    def selectTask(self):
+        task = self.comboBox_task.currentText()
+        self.controller.selectedTask = task
+        if task == 'CrossTheWall':
+            self.clearSlide()
+            self.setCubeSlideSettingEnabled(False)
+            self.penDialog.clearSlide()
+            self.penDialog.setCubeSlideSettingEnabled(False)
+        else:
+            self.penDialog.setCubeSlideSettingEnabled(True)
+
+        self.map.gridWidget.taskChanged(task)
+
     # 设置路程成本折扣
     def setDisCostDiscount(self):
+        if self.map.disCostDiscount != float(self.spinBox_disCostDiscount.value()):
+            self.setMapSaved(False)
         self.map.disCostDiscount = float(self.spinBox_disCostDiscount.value())
-        self.setMapSaved(False)
- 
+        
+    # 设置方格滑动设定使能/使能
+    def setCubeSlideSettingEnabled(self,enabled):
+        self.spinBox_cubeDown.setEnabled(enabled)
+        self.spinBox_cubeUp.setEnabled(enabled)
+        self.spinBox_cubeLeft.setEnabled(enabled)
+        self.spinBox_cubeRight.setEnabled(enabled)
+
     # 设置方格编辑面板使能/失能
     def setCubeSettingLayoutEnabled(self,enabled):
         self.spinBox_cubeReward.setEnabled(enabled)
@@ -337,6 +423,7 @@ class MapEditor(QMainWindow):
         self.checkBox_cubePass.setEnabled(enabled)
         self.pbt_editCube.setEnabled(enabled)
         self.pbt_saveAsPen.setEnabled(enabled)
+        self.setCubeSlideSettingEnabled(enabled and self.controller.selectedTask == 'GridMaze')
 
     # 设置画笔编辑面板使能/失能
     def setPenSettingLayoutEnabled(self,enabled):
@@ -380,7 +467,11 @@ class MapEditor(QMainWindow):
             self.checkBox_cubeStart.setChecked(cube.isStart)
             self.checkBox_cubeEnd.setChecked(cube.isEnd)
             self.checkBox_cubePass.setChecked(cube.isPassable)
-            
+            self.spinBox_cubeUp.setValue(cube.slide[0])
+            self.spinBox_cubeDown.setValue(cube.slide[1])
+            self.spinBox_cubeLeft.setValue(cube.slide[2])
+            self.spinBox_cubeRight.setValue(cube.slide[3])
+
             # 如果是墙，禁止编辑
             if not cube.isPassable:
                 self.setCubeSettingLayoutEnabled(False)
@@ -416,8 +507,7 @@ class MapEditor(QMainWindow):
             self.map.gridWidget.update()
 
     # 新建画笔
-    def newPen(self,name,color,reward,attribute):
-        slide = [0,0,0,0]
+    def newPen(self,name,color,reward,attribute,slide):
         isPassable = attribute != '墙壁'
         isStart = attribute == '起点'
         isEnd = attribute == '终点'
@@ -429,8 +519,7 @@ class MapEditor(QMainWindow):
         self.setMapSaved(False)       
 
     # 编辑画笔
-    def editPen(self,name,color,reward,attribute):
-        slide = [0,0,0,0]
+    def editPen(self,name,color,reward,attribute,slide):
         isPassable = attribute != '墙壁'
         isStart = attribute == '起点'
         isEnd = attribute == '终点'
@@ -522,7 +611,10 @@ class MapEditor(QMainWindow):
     # 编辑某个方格
     def updateCube(self):
         cube = self.map.gridWidget.cubeSelected
-        slide = [0,0,0,0]
+        slide = [int(self.spinBox_cubeUp.value()),
+                 int(self.spinBox_cubeDown.value()),
+                 int(self.spinBox_cubeLeft.value()),
+                 int(self.spinBox_cubeRight.value())]
         reward = float(self.spinBox_cubeReward.value())
         isPassable = self.checkBox_cubePass.isChecked()
         isStart = self.checkBox_cubeStart.isChecked()
@@ -593,6 +685,9 @@ class MapEditor(QMainWindow):
         self.gridLayout.addWidget(self.map.gridWidget, 1, 2, 1, 1)  # 重新加载方格地图
         self.spinBox_disCostDiscount.setValue(self.map.disCostDiscount)
         self.refreshPenComboBox()
+
+        self.comboBox_task.setCurrentText(self.map.controller.selectedTask)
+        self.selectTask()
 
         if self.map.name != '':
             if not self.map.saved:

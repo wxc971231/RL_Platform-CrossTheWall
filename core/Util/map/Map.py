@@ -43,6 +43,10 @@ class Map(QObject):
             endCubesPos.append([cube.row,cube.colum])
         return MapPara([self.gridWidget.row,self.gridWidget.colum],startCubesPos,endCubesPos,self.disCostDiscount)
 
+    def close(self):
+        self.isVisible = False
+        self.gridWidget.update()
+
 class MapPara():
     def __init__(self,size,startCubesPos,endCubesPos,disCostDiscount):
         self.size = size

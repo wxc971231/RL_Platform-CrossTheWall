@@ -118,7 +118,7 @@ class MapFile():
                         for i in range(map.gridWidget.row):
                             colum_cubes = []
                             for j in range(map.gridWidget.colum):
-                                cube = Cube(0,0,i,j,0,map)
+                                cube = Cube(0,0,i,j,0,map,map.controller.selectedTask)
                                 colum_cubes.append(cube)
                             newCubes.append(colum_cubes)
 
