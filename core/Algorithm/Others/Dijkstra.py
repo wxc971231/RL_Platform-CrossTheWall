@@ -88,7 +88,8 @@ class Dijkstra(BasePolicy):
                 if pc.distance(endCube) < dist[pc.row][pc.colum]:
                     for a in pc.action:
                         pc.pi[a] = 0
-                    pc.pi[pc.row - endCube.row] = 1
+                    newAction = endCube.priorCubeDict[pc][0]
+                    pc.pi[newAction] = 1
             
         # 从endCube开始反向找出各点到它的最短路
         visitCube,visit_r,visit_c = endCudeList[0],endCudeList[0].row,endCudeList[0].colum
@@ -108,9 +109,12 @@ class Dijkstra(BasePolicy):
                 if visitedSet[pc.row][pc.colum] == False: 
                     if dist[visit_r][visit_c] + pc.distance(visitCube) < dist[r][c]:
                         dist[r][c] = dist[visit_r][visit_c] + pc.distance(visitCube)
+
+                        # 重设前驱动作    
                         for a in pc.action:
                             pc.pi[a] = 0
-                        pc.pi[r - visit_r] = 1  
+                        newAction = visitCube.priorCubeDict[pc][0]
+                        pc.pi[newAction] = 1
             visitCube.agentLocated = False    
             
             # 遍历找出当前最短路径点作为下一轮访问点
@@ -124,12 +128,14 @@ class Dijkstra(BasePolicy):
                         visit_r,visit_c = visitCube.row,visitCube.colum        
         
         # 补充所有等路程动作
+        
         for r in range(gridWidget.row):
             for c in range(gridWidget.colum): # 最后一列不要补充，否则不能一步到终点
                 cube = cubes[r][c]
-                if cube.isPassable:
+                if cube.isPassable and cube not in self.map.endCubeList:
                     n = 0
-                    if c < gridWidget.colum-1:   
+                    columRange = gridWidget.colum-1 if self.controller.selectedTask == 'CrossTheWall' else gridWidget.colum
+                    if c < columRange:   
                         for a in cube.action:
                             cube.pi[a] = 0
                             ncList = cube.nextCubeDict[a]
@@ -143,15 +149,16 @@ class Dijkstra(BasePolicy):
                             cube.pi[a] = 0
                             for endCube in endCudeList:
                                 if dist[r][c] == cube.distance(endCube):
-                                    cube.pi[r - endCube.row] = 1
+                                    newAction = endCube.priorCubeDict[cube][0]
+                                    cube.pi[newAction] = 1
                                     n += 1
                     for a in cube.action:
                         if cube.pi[a] != 0:
                             cube.pi[a] = 1/n
-
+    
         # 从UI清除最后一个访问点
         gridWidget.update()
-
+        
         # 结束执行子线程
         self.autoExec = False
 

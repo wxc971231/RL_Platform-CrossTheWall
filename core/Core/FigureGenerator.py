@@ -307,7 +307,7 @@ class FigureGenerator(QtWidgets.QMainWindow):
             else:
                 if not waveData in self.loadedWave:
                     waveData.isVisible = True
-                    waveData.color = tuple(np.random.choice(100, 3, replace=False)+30) # 从30~130间随机取3个数作为颜色
+                    waveData.color = tuple(np.random.choice(100, 3, replace=False)+60) # 从60~160间随机取3个数作为颜色
                     self.loadedWave.append(waveData)
             #else:
             #    self.loadWaveDialog.textBrowser.setText('此波形已存在于工作区')
