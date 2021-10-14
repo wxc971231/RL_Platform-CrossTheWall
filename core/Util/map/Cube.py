@@ -58,6 +58,9 @@ class Cube():
 
             for a in self.action:
                 transfer = self.map.gridWidget.nextCubeAndProbList(self.row,self.colum,a)
+
+
+                
                 
                 # 下一步
                 if not a in self.nextCubeDict:

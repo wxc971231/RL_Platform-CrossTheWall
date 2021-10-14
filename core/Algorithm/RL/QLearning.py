@@ -119,7 +119,8 @@ class QLearning(BaseModelFreePolicy):
             # 执行A，观测到R和S_
             nextCubeList = [s_ for s_,p in S.nextCubeDict[A]]
             S_ = randomChoice(nextCubeList)
-            R = S.reward - self.map.disCostDiscount*S.distance(S_)
+            dist = S.distance(S_)
+            R = S.reward - self.map.disCostDiscount*dist + self.map.stepReward
             rewards.append(R)
             length += S.distance(S_)
 

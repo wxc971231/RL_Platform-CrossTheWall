@@ -106,6 +106,16 @@ class CWGenerator(QObject):
         cubes = self.map.gridWidget.cubes
 
         wallPos = random.randint(wallSpacingMin,wallSpacingMax)
+
+        # 第一列和最后一列随机设置起点和终点
+        startCube = cubes[random.randint(0,rowNum-1)][0]
+        endCube = cubes[random.randint(0,rowNum-1)][columNum-1]
+        startCube.isStart = True
+        endCube.isEnd = True
+        endCube.reward = 50
+        self.map.startCubeList = [startCube,]
+        self.map.endCubeList = [endCube,]
+
         # 第一列和最后一列禁止放置墙壁
         while 0 < wallPos < columNum-1:
             for row in range(rowNum):
@@ -117,15 +127,6 @@ class CWGenerator(QObject):
                 cube.reward = 5
                 cube.penName = 'modified'
             wallPos += random.randint(wallSpacingMin,wallSpacingMax)
-
-        # 第一列和最后一列随机设置起点和终点
-        startCube = cubes[random.randint(0,rowNum-1)][0]
-        endCube = cubes[random.randint(0,rowNum-1)][columNum-1]
-        startCube.isStart = True
-        endCube.isEnd = True
-        endCube.reward = 50
-        self.map.startCubeList = [startCube,]
-        self.map.endCubeList = [endCube,]
 
         # 设置保存标识
         self.editor.setMapSaved(False)

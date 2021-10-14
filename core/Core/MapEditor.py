@@ -121,8 +121,8 @@ class MapEditor(QMainWindow):
         self.cubeSettingLayout.addWidget(self.label_cubeReward, 3, 0, 1, 2)
         self.spinBox_cubeReward = QtWidgets.QDoubleSpinBox(self.centralwidget)
         self.spinBox_cubeReward.setObjectName("spinBox_cubeReward")
-        self.spinBox_cubeReward.setMaximum(1000)
-        self.spinBox_cubeReward.setMinimum(-1000)
+        self.spinBox_cubeReward.setMaximum(10000)
+        self.spinBox_cubeReward.setMinimum(-10000)
         self.cubeSettingLayout.addWidget(self.spinBox_cubeReward, 3, 2, 1, 2)
         self.checkBox_cubePass = QtWidgets.QCheckBox(self.centralwidget)
         self.checkBox_cubePass.setText("")
@@ -212,23 +212,32 @@ class MapEditor(QMainWindow):
         self.spinBox_disCostDiscount.setMinimum(-10)
         self.spinBox_disCostDiscount.setSingleStep(0.01)
         self.globalSettingLayout.addWidget(self.spinBox_disCostDiscount, 2, 1, 1, 1)  
+        self.label_stepReward = QtWidgets.QLabel(self.centralwidget)
+        self.label_stepReward.setObjectName("label_stepReward")
+        self.globalSettingLayout.addWidget(self.label_stepReward, 3, 0, 1, 1)
+        self.spinBox_stepReward = QtWidgets.QDoubleSpinBox(self.centralwidget)
+        self.spinBox_stepReward.setObjectName("spinBox_stepReward")
+        self.spinBox_stepReward.setMaximum(99)
+        self.spinBox_stepReward.setValue(0.0)
+        self.spinBox_stepReward.setMinimum(-99)
+        self.globalSettingLayout.addWidget(self.spinBox_stepReward, 3, 1, 1, 1)  
         self.label_showGridWithColor = QtWidgets.QLabel(self.centralwidget)
         self.label_showGridWithColor.setObjectName("label_showGridWithColor")
-        self.globalSettingLayout.addWidget(self.label_showGridWithColor, 3, 0, 1, 1)
+        self.globalSettingLayout.addWidget(self.label_showGridWithColor, 4, 0, 1, 1)
         self.checkBox_showGridWithColor = QtWidgets.QCheckBox(self.centralwidget)
         self.checkBox_showGridWithColor.setText("")
         self.checkBox_showGridWithColor.setObjectName("checkBox_showGridWithColor")
         self.checkBox_showGridWithColor.setChecked(True)
-        self.globalSettingLayout.addWidget(self.checkBox_showGridWithColor, 3, 1, 1, 1)
+        self.globalSettingLayout.addWidget(self.checkBox_showGridWithColor, 4, 1, 1, 1)
         self.comboBox_task = QtWidgets.QComboBox(self.centralwidget)
         self.comboBox_task.setObjectName("comboBox_task")
-        self.globalSettingLayout.addWidget(self.comboBox_task, 4, 0, 1, 2)
+        self.globalSettingLayout.addWidget(self.comboBox_task, 5, 0, 1, 2)
         self.comboBox_task.addItem('CrossTheWall')
         self.comboBox_task.addItem('GridMaze')
         self.comboBox_task.setCurrentText(self.controller.selectedTask)
         self.pbt_finish = QtWidgets.QPushButton(self.centralwidget)
         self.pbt_finish.setObjectName("pbt_finish")
-        self.globalSettingLayout.addWidget(self.pbt_finish, 5, 0, 1, 2)
+        self.globalSettingLayout.addWidget(self.pbt_finish, 6, 0, 1, 2)
         self.settingLayout.addLayout(self.globalSettingLayout)
         spacerItem1 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.settingLayout.addItem(spacerItem1)
@@ -297,6 +306,7 @@ class MapEditor(QMainWindow):
         self.pbt_deletePen.clicked.connect(self.deletPen)                       # 删除画笔
         self.map.gridWidget.cubeUpdateSignal.connect(self.setMapSavedIfFalse)   # 用画笔绘制方格时的更新信号
         self.spinBox_disCostDiscount.valueChanged.connect(self.setDisCostDiscount)
+        self.spinBox_stepReward.valueChanged.connect(self.setStepReward)
         self.pbt_finish.clicked.connect(self.editFinish)
         self.sizeDialog.sizeSignal.connect(self.newMap)
         self.saveFileDialog.saveMapSignal.connect(self.saveMap)
@@ -334,6 +344,7 @@ class MapEditor(QMainWindow):
         self.action_save_as.setText(_translate("EditorWindow", "另存为"))
         self.label_globalTitle.setText(_translate("EditorWindow", "全局设定"))
         self.label_disCostDiscount.setText(_translate("EditorWindow", "路程折扣"))
+        self.label_stepReward.setText(_translate("self", "每步奖励"))
         self.pbt_editPen.setText(_translate("EditorWindow", "编辑画笔"))
         self.label_genTitle.setText(_translate("self", "地图生成器"))
         self.menuGenerator.setTitle(_translate("self", "Generator"))
@@ -407,7 +418,13 @@ class MapEditor(QMainWindow):
         if self.map.disCostDiscount != float(self.spinBox_disCostDiscount.value()):
             self.setMapSaved(False)
         self.map.disCostDiscount = float(self.spinBox_disCostDiscount.value())
-        
+
+    # 设置每步奖励  
+    def setStepReward(self):
+        if self.map.stepReward != float(self.spinBox_stepReward.value()):
+            self.setMapSaved(False)
+        self.map.stepReward = float(self.spinBox_stepReward.value()) 
+    
     # 设置方格滑动设定使能/使能
     def setCubeSlideSettingEnabled(self,enabled):
         self.spinBox_cubeDown.setEnabled(enabled)
@@ -675,6 +692,7 @@ class MapEditor(QMainWindow):
     def closeEvent(self,event):
         self.checkBox_penDrawing.setChecked(False)
         self.map.disCostDiscount = float(self.spinBox_disCostDiscount.value())
+        self.map.stepReward = float(self.spinBox_stepReward.value())
         self.controller.show()
             
     def showEvent(self,event):
@@ -684,6 +702,7 @@ class MapEditor(QMainWindow):
         self.map.showColorByValue = False
         self.gridLayout.addWidget(self.map.gridWidget, 1, 2, 1, 1)  # 重新加载方格地图
         self.spinBox_disCostDiscount.setValue(self.map.disCostDiscount)
+        self.spinBox_stepReward.setValue(self.map.stepReward)
         self.refreshPenComboBox()
 
         self.comboBox_task.setCurrentText(self.map.controller.selectedTask)

@@ -97,12 +97,13 @@ class MapFile():
                 else:
                     line = lines[5+num+1]
                     try:
-                        mapPara = MapPara([0,0],[],[],0.0)
+                        mapPara = MapPara([0,0],[],[],0.0,0.0)
                         mapPara.__dict__ = json.loads(line[:-1])
 
                         map.gridWidget.row = mapPara.size[0]
                         map.gridWidget.colum = mapPara.size[1]
                         map.disCostDiscount = mapPara.disCostDiscount
+                        map.stepReward = mapPara.stepReward
                     except Exception as e:
                         print(e)
                         self.loadMap(map.path,map)  # 加载出错，重新加载当前地图

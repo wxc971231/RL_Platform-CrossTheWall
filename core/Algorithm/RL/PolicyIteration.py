@@ -118,7 +118,7 @@ class PolicyIteration(BasePolicy):
                         for nc,p in cube.nextCubeDict[a]:
                             if nc != None:
                                 disCost = (cube not in self.map.endCubeList)*self.map.disCostDiscount*cube.distance(nc)
-                                v = v + self.pi[row][colum][a]*(cube.reward - p*disCost + p*self.gamma*nc.value)
+                                v = v + self.pi[row][colum][a]*(cube.reward + self.map.stepReward - p*disCost + p*self.gamma*nc.value)
                 newValue_row.append(v)
             newValue.append(newValue_row)
 
@@ -164,7 +164,7 @@ class PolicyIteration(BasePolicy):
                     for a in cube.action:
                         if cube.nextCubeDict[a] != []:
                             # Q = R(s,a) + gamma*sum{p(s'|s,a)*V(s')}
-                            Q[a] = cube.reward
+                            Q[a] = cube.reward + self.map.stepReward
                             for nc,p in cube.nextCubeDict[a]:
                                 if nc != None:
                                     disCost = (cube not in self.map.endCubeList)*self.map.disCostDiscount*cube.distance(nc)

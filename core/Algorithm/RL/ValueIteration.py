@@ -84,7 +84,7 @@ class ValueIteration(BasePolicy):
                     for a in cube.action:
                         # Q(s,a) = R(s,a) + gamma*sum{p(s'|s,a)*V(s')}
                         if cube.nextCubeDict[a] != []:
-                            Q[a] = cube.reward
+                            Q[a] = cube.reward + self.map.stepReward
                             for nc,p in cube.nextCubeDict[a]:
                                 if nc != None:
                                     disCost = (cube not in self.map.endCubeList)*self.map.disCostDiscount*cube.distance(nc)
@@ -130,7 +130,7 @@ class ValueIteration(BasePolicy):
                     for a in cube.action:
                         # Q(s,a) = R(s,a) + gamma*sum{p(s'|s,a)*V(s')}
                         if cube.nextCubeDict[a] != []:
-                            Q[a] = cube.reward
+                            Q[a] = cube.reward + self.map.stepReward
                             for nc,p in cube.nextCubeDict[a]:
                                 if nc != None:
                                     disCost = (cube not in self.map.endCubeList)*self.map.disCostDiscount*cube.distance(nc)

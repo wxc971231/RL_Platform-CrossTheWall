@@ -12,7 +12,7 @@ Pen para:
 {"name": "5", "color": "#fff7b4", "reward": 5.0, "isPassable": true, "isStart": false, "isEnd": false, "slide": [0, 0, 0, 0]}
 
 map para:
-{"size": [15, 20], "startCubePosList": [[7, 0], [3, 0], [12, 0]], "endCubePosList": [[3, 19], [7, 19], [12, 19]], "disCostDiscount": 1.0}
+{"size": [15, 20], "startCubePosList": [[7, 0], [3, 0], [12, 0]], "endCubePosList": [[3, 19], [7, 19], [12, 19]], "disCostDiscount": 1.0, "stepReward": 0.0}
 
 Cubes para:
 0,0,0.0,default,True,False,False;0,0,0,0

@@ -158,7 +158,7 @@ class DynaQPrior(BaseModelFreePolicy):
             nextCubeList = [s_ for  s_,p in S.nextCubeDict[A]]
             nextCubeProbList = [p for  s_,p in S.nextCubeDict[A]] 
             S_ = probabilisticChoise(nextCubeList,nextCubeProbList)
-            R = S.reward - self.map.disCostDiscount*S.distance(S_)
+            R = S.reward - self.map.disCostDiscount*S.distance(S_) + self.map.stepReward
             rewards.append(R)
             length += S.distance(S_)
 

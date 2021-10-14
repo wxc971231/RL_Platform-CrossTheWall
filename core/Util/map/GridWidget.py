@@ -308,7 +308,7 @@ class GridWidget(QtWidgets.QWidget):
                     # 显示下一步策略
                     if not self.map.showEpisodeOfSelectedCube:
                         cube = self.cubeSelected
-                        
+                        '''
                         # 所有上一步可达
                         if cube != None:
                             for pc in cube.priorCubeDict:
@@ -334,7 +334,7 @@ class GridWidget(QtWidgets.QWidget):
                                             # 如果不显示Q，显示一下pi概率
                                             if not self.map.showQ:
                                                 painter.drawText(QtCore.QRect(nc.x+0.1*nc.l,nc.y+0.1*nc.l,0.8*nc.l,0.8*nc.l),QtCore.Qt.AlignHCenter | QtCore.Qt.AlignTop ,str(round(cube.pi[a],3)))
-                        '''
+                        
                     # 显示此格开始的所有可能轨迹(BFS)
                     else:
                         if self.cubeSelected != None and self.cubeSelected.isPassable:

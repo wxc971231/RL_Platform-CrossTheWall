@@ -8,7 +8,7 @@ Pen para:
 {"name": "modified", "color": "#d2ffe3", "reward": 0, "isPassable": true, "isStart": false, "isEnd": false, "slide": [0, 0, 0, 0]}
 
 map para:
-{"size": [15, 20], "startCubePosList": [[0, 0]], "endCubePosList": [[14, 19]], "disCostDiscount": 0.0}
+{"size": [15, 20], "startCubePosList": [[0, 0]], "endCubePosList": [[14, 19]], "disCostDiscount": 0.0, "stepReward": 0.0}
 
 Cubes para:
 0,0,0.0,modified,True,True,False;0,0,0,0

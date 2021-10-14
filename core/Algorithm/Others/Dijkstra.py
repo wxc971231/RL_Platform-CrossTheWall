@@ -128,7 +128,6 @@ class Dijkstra(BasePolicy):
                         visit_r,visit_c = visitCube.row,visitCube.colum        
         
         # 补充所有等路程动作
-        
         for r in range(gridWidget.row):
             for c in range(gridWidget.colum): # 最后一列不要补充，否则不能一步到终点
                 cube = cubes[r][c]

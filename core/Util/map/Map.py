@@ -17,6 +17,7 @@ class Map(QObject):
         self.startCubeList = None           # 起点
         self.endCubeList = None             # 终点
         self.disCostDiscount = 1.0          # 路程折扣
+        self.stepReward = 0.0               # 每步奖励
         
         self.isVisible = False              # 是否显示地图网格
         self.showReward = True              # 显示状态奖励
@@ -33,7 +34,7 @@ class Map(QObject):
         self.name = ''                      # 地图配置文件名
         self.path = ''                      # 地图配置文件路径
 
-        self.gridWidget = GridWidget(1,1,self) # 地图网格
+        self.gridWidget = GridWidget(0,0,self) # 地图网格
     
     def getMapPara(self):
         startCubesPos,endCubesPos = [],[]
@@ -41,18 +42,19 @@ class Map(QObject):
             startCubesPos.append([cube.row,cube.colum])
         for cube in self.endCubeList:
             endCubesPos.append([cube.row,cube.colum])
-        return MapPara([self.gridWidget.row,self.gridWidget.colum],startCubesPos,endCubesPos,self.disCostDiscount)
+        return MapPara([self.gridWidget.row,self.gridWidget.colum],startCubesPos,endCubesPos,self.disCostDiscount,self.stepReward)
 
     def close(self):
         self.isVisible = False
         self.gridWidget.update()
 
 class MapPara():
-    def __init__(self,size,startCubesPos,endCubesPos,disCostDiscount):
+    def __init__(self,size,startCubesPos,endCubesPos,disCostDiscount,stepReward):
         self.size = size
         self.startCubePosList = startCubesPos
         self.endCubePosList = endCubesPos
         self.disCostDiscount = disCostDiscount
+        self.stepReward = stepReward
 
 
         

@@ -139,7 +139,7 @@ class DynaQ(BaseModelFreePolicy):
             # 执行A，观测到R和S_
             nextCubeList = [s_ for s_,p in S.nextCubeDict[A]]
             S_ = randomChoice(nextCubeList)
-            R = S.reward - self.map.disCostDiscount*S.distance(S_)
+            R = S.reward - self.map.disCostDiscount*S.distance(S_) + self.map.stepReward
             rewards.append(R)
             length += S.distance(S_)
 
