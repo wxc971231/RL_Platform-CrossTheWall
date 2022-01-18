@@ -127,3 +127,18 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# custom
+/map/CrossTheWall/*
+/map/GridMaze/*
+!/map/CrossTheWall/bird.txt
+!/map/CrossTheWall/EM.txt
+!/map/CrossTheWall/EM2.txt
+!/map/GridMaze/wind.txt
+!/map/GridMaze/flat.txt
+/wave/*
+!/wave/Q.wd
+!/wave/DynaQ.wd
+!/wave/DynaQ_P.wd
+
+
