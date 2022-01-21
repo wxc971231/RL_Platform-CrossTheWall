@@ -8,7 +8,7 @@ from PyQt5.QtWidgets import *
 from core.Util.dialog import SizeDialog,PenDialog,SaveFileDialog,LoadMapDialog
 from core.Util.file import MapFile
 from core.Util.map import Pen,Map
-from core.MapGenerator import CWGenerator
+from core.MapGenerator import CWGenerator,GMGenerator
  
 class MapEditor(QMainWindow):
     def __init__(self,controller):
@@ -27,7 +27,9 @@ class MapEditor(QMainWindow):
         # 生成器字典
         self.generatorDict = {}
         cwGenerator = CWGenerator(self)
+        gmGenerator = GMGenerator(self)
         self.generatorDict['Crossing Wall'] = cwGenerator
+        self.generatorDict['Grid Maze'] = gmGenerator
         
     def setupUi(self):
         self.setObjectName("EditorWindow")
@@ -268,11 +270,14 @@ class MapEditor(QMainWindow):
         self.action_save_as.setObjectName("action_save_as")
         self.action_generator_CW = QtWidgets.QAction(self)
         self.action_generator_CW.setObjectName("action_generator_CW")
+        self.action_generator_GM = QtWidgets.QAction(self)
+        self.action_generator_GM.setObjectName("action_generator_GM")
         self.menuFile.addAction(self.action_add_map)
         self.menuFile.addAction(self.action_load_map)
         self.menuFile.addAction(self.action_save_map)
         self.menuFile.addAction(self.action_save_as)
         self.menuGenerator.addAction(self.action_generator_CW)
+        self.menuGenerator.addAction(self.action_generator_GM)
         self.menubar.addAction(self.menuFile.menuAction())
         self.menubar.addAction(self.menuGenerator.menuAction())
 
@@ -294,6 +299,7 @@ class MapEditor(QMainWindow):
         self.action_save_map.triggered.connect(self.updateMap)                  # 更新地图
         self.action_save_as.triggered.connect(self.showSaveFileDialog)          # 地图另存为
         self.action_generator_CW.triggered.connect(lambda: self.loadGenerator(self.generatorDict['Crossing Wall']))
+        self.action_generator_GM.triggered.connect(lambda: self.loadGenerator(self.generatorDict['Grid Maze']))
         self.checkBox_cubeStart.clicked.connect(self.checkBoxCubeStartClicked)  # 方块设为起点
         self.checkBox_cubeEnd.clicked.connect(self.checkBoxCubeEndClicked)      # 方块设为终点
         self.checkBox_cubePass.clicked.connect(self.checkBoxCubePassClicked)    # 设置能否通行
@@ -349,6 +355,7 @@ class MapEditor(QMainWindow):
         self.label_genTitle.setText(_translate("self", "地图生成器"))
         self.menuGenerator.setTitle(_translate("self", "Generator"))
         self.action_generator_CW.setText(_translate("self", "Crossing Wall"))
+        self.action_generator_GM.setText(_translate("self", "Grid Maze"))
         self.label_cubeLeft.setText(_translate("self", "左滑"))
         self.label_cubeRight.setText(_translate("self", "右滑"))
         self.label_cubeUp.setText(_translate("self", "上滑"))
