@@ -1,5 +1,4 @@
-# 适用于Cross The Wall 任务的地图生成器
-from operator import ipow
+# 适用于 Grid Maze 任务的地图生成器
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
